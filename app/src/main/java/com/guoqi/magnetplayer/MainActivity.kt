@@ -3,7 +3,6 @@ package com.guoqi.magnetplayer
 import android.Manifest
 import android.app.ProgressDialog
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -19,7 +18,6 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import com.alibaba.fastjson.JSON
-import com.guoqi.magnetplayer.ttorrent.common.Torrent
 import com.lzy.okgo.OkGo
 import com.lzy.okgo.callback.StringCallback
 import com.lzy.okgo.model.Response
@@ -27,17 +25,22 @@ import com.scwang.smartrefresh.layout.footer.ClassicsFooter
 import com.scwang.smartrefresh.layout.header.ClassicsHeader
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.android.synthetic.main.dialog_text_input.view.*
 import java.io.File
 import java.util.regex.Pattern
 
 
 class MainActivity : AppCompatActivity() {
 
+    private val TAG = MainActivity::class.java.simpleName
+
     companion object {
         //source=种子搜&keyword=测试&page=1
         val rootPath = Environment.getExternalStorageDirectory().absolutePath + File.separator + "MagnetPlayer"
         const val LOAD_REFRESH = 1001
         const val LOAD_MORE = 1002
+
+        private val TAG_ADD_LINK_DIALOG = "add_link_dialog"
     }
 
     private lateinit var pd: ProgressDialog
@@ -55,14 +58,15 @@ class MainActivity : AppCompatActivity() {
         initProgressDialog()
         initData()
 
-        fab.setOnClickListener { view ->
+        fab.setOnClickListener { _ ->
+            showAddLinkDialog()
+        }
+    }
 
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1);
-            } else {
-                decodeTorrent()
-
-            }
+    override fun onResume() {
+        super.onResume()
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1);
         }
     }
 
@@ -107,7 +111,7 @@ class MainActivity : AppCompatActivity() {
         pd.setCancelable(true)
     }
 
-    fun loadDialog() {
+    private fun loadDialog() {
         pd?.show()
     }
 
@@ -156,10 +160,40 @@ class MainActivity : AppCompatActivity() {
         return Pattern.matches("^(magnet:\\?xt=urn:btih:)[0-9a-fA-F]{40}.*$", magnet)
     }
 
+
+    private fun showAddLinkDialog() {
+        if (!this.isFinishing) {
+            val inputView = layoutInflater.inflate(R.layout.dialog_text_input, null)
+            var addLinkDialog = AlertDialog.Builder(this)
+                    .setTitle("添加磁链")
+                    .setView(inputView)
+                    .setPositiveButton(R.string.ok) { _, _ ->
+                        val link = inputView.et.text.toString()
+                        var url: String = ""
+                        when {
+                            link.startsWith(Utils.MAGNET_PREFIX) -> url = link
+                            Utils.isHash(link) -> url = Utils.normalizeMagnetHash(link)
+                            else -> {
+                                Snackbar.make(inputView, "磁链不正确, 请检查", Snackbar.LENGTH_LONG).show()
+                            }
+                        }
+
+                        if (!url.isEmpty()) {
+                            val i = Intent(this, DownloadActivity::class.java)
+                            i.putExtra(DownloadActivity.TAG_URI, Uri.parse(url))
+                            startActivity(i)
+                        }
+                    }
+                    .setNegativeButton(R.string.cancel) { _, _ ->
+                    }
+            addLinkDialog.show()
+        }
+
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         when (requestCode) {
             1 -> if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                decodeTorrent()
             } else {
                 showNoPermissionDialog(this, "文件读写")
             }
@@ -170,44 +204,12 @@ class MainActivity : AppCompatActivity() {
         AlertDialog.Builder(context).setTitle("获取" + str + "权限被禁用")
                 .setMessage("请在 设置-应用管理-" + context.getString(R.string.app_name) + "-权限管理 (将" + str + "权限打开)")
                 .setNegativeButton("取消", null)
-                .setPositiveButton("去设置", DialogInterface.OnClickListener { _, _ ->
+                .setPositiveButton("去设置") { _, _ ->
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                     intent.data = Uri.parse("package:" + context.packageName)
                     context.startActivity(intent)
-                }).show()
+                }.show()
     }
 
-    private fun decodeTorrent() {
-        Snackbar.make(toolbar, "正在解析种子", Snackbar.LENGTH_LONG).show()
-//            val address = InetAddress.getLocalHost()
-//            var newFile = File(Environment.getExternalStorageDirectory().absolutePath + "/newFile")
-//            Util.writeBytesToFile(assets.open("test.torrent"), newFile)
-//            val torrent = SharedTorrent.fromFile(newFile, File(Environment.getExternalStorageDirectory().absolutePath))
-//            val client = Client(address, torrent)
-//            client.download()
-        var `is` = assets.open("test.torrent")
-        var file = File(rootPath + "/bt.torrent")
-//        if (!file.exists()) {
-//            file.mkdirs()
-//        }
-        Util.writeBytesToFile(`is`, file)
-        var torrent = Torrent.load(file)
-        Log.e("torrent: name:", torrent.name)
-        Log.e("torrent: comment:", torrent.comment)
-        Log.e("torrent: createdBy:", torrent.createdBy)
-        Log.e("torrent: hexInfoHash:", torrent.hexInfoHash)
-        Log.e("torrent: announceList:", torrent.announceList.toString())
-        Log.e("torrent: size:", torrent.size.toString())
-        Log.e("torrent: isSeeder:", torrent.isSeeder.toString())
-        Log.e("torrent: trackerCount:", torrent.trackerCount.toString())
-
-//        val tracker = Tracker(6969)
-//        val filter = FilenameFilter { dir, name -> name.endsWith(".torrent") }
-//        for (f in File("/path/to/torrent/files").listFiles(filter)) {
-//            tracker.announce(TrackedTorrent.load(f))
-//        }
-//        tracker.setAcceptForeignTorrents(true)
-//        tracker.start(true);
-    }
 
 }
