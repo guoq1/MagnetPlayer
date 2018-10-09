@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:text="正在获取..." />
+        android:text="未知" />
 
     <TextView
         android:id="@+id/tv_progress"
@@ -17,7 +17,7 @@
         android:layout_below="@+id/tv_title"
         android:layout_margin="8dp"
         android:gravity="right"
-        android:text="已下载 0%" />
+        android:text="" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_download"
@@ -25,9 +25,9 @@
         android:layout_height="match_parent"
         android:layout_above="@+id/btn"
         android:layout_below="@+id/tv_progress"
-        android:padding="8dp"
         android:background="@android:color/darker_gray"
-        android:clipToPadding="false" />
+        android:clipToPadding="false"
+        android:padding="8dp" />
 
     <ProgressBar
         android:id="@+id/pd"

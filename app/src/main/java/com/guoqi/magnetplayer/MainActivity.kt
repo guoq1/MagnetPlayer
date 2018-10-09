@@ -40,7 +40,6 @@ class MainActivity : AppCompatActivity() {
         const val LOAD_REFRESH = 1001
         const val LOAD_MORE = 1002
 
-        private val TAG_ADD_LINK_DIALOG = "add_link_dialog"
     }
 
     private lateinit var pd: ProgressDialog
@@ -164,6 +163,8 @@ class MainActivity : AppCompatActivity() {
     private fun showAddLinkDialog() {
         if (!this.isFinishing) {
             val inputView = layoutInflater.inflate(R.layout.dialog_text_input, null)
+            inputView.et.setText(Utils.getClipboard(this))
+
             var addLinkDialog = AlertDialog.Builder(this)
                     .setTitle("添加磁链")
                     .setView(inputView)
