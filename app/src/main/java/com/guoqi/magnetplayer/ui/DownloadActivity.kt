@@ -1,4 +1,4 @@
-package com.guoqi.magnetplayer
+package com.guoqi.magnetplayer.ui
 
 import android.content.Context
 import android.net.Uri
@@ -12,15 +12,23 @@ import android.support.v7.widget.GridLayoutManager
 import android.util.Log
 import android.view.View
 import com.frostwire.jlibtorrent.TorrentHandle
-import com.frostwire.jlibtorrent.TorrentStatus.State
-import com.masterwok.simpletorrentandroid.TorrentSession
-import com.masterwok.simpletorrentandroid.TorrentSessionOptions
-import com.masterwok.simpletorrentandroid.contracts.TorrentSessionListener
-import com.masterwok.simpletorrentandroid.models.TorrentSessionStatus
+import com.frostwire.jlibtorrent.TorrentStatus
+import com.guoqi.magnetplayer.R
+import com.guoqi.magnetplayer.adapter.TorrentPieceAdapter
+import com.guoqi.magnetplayer.core.TorrentSession
+import com.guoqi.magnetplayer.core.TorrentSessionOptions
+import com.guoqi.magnetplayer.core.contracts.TorrentSessionListener
+import com.guoqi.magnetplayer.core.models.TorrentSessionStatus
+import com.guoqi.magnetplayer.util.MagnetUtils
+import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
+import com.uber.autodispose.autoDisposable
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.activity_download.*
 import java.lang.ref.WeakReference
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.util.concurrent.TimeUnit
 
 class DownloadActivity : AppCompatActivity() {
 
@@ -28,6 +36,7 @@ class DownloadActivity : AppCompatActivity() {
     private lateinit var torrentSession: TorrentSession
     private var startDownloadTask: DownloadTask? = null
     private val torrentPieceAdapter: TorrentPieceAdapter = TorrentPieceAdapter()
+    private val scopeProvider: AndroidLifecycleScopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
     companion object {
         val TAG_URI = "uri"
@@ -48,7 +57,7 @@ class DownloadActivity : AppCompatActivity() {
             intent.getParcelableExtra(TAG_URI)
 
 
-        if (uri?.scheme == Utils.MAGNET_PREFIX) {
+        if (uri?.scheme == MagnetUtils.MAGNET_PREFIX) {
             Snackbar.make(pd, "正在获取磁链信息", Snackbar.LENGTH_LONG).show()
             pd.visibility = View.VISIBLE
             runOnUiThread {
@@ -112,7 +121,14 @@ class DownloadActivity : AppCompatActivity() {
                         tv_title.text = title.substring(title.indexOf("&dn=") + 4)
                     }
                     Snackbar.make(pd, "下载到: /DownLoad 目录下", Snackbar.LENGTH_LONG).show()
+                    countdown(5)
+                            .autoDisposable(scopeProvider)
+                            .subscribe{
+                                Log.e(TAG,"subscribe")
+                            }
+
                 }
+
                 showLog(torrentSessionStatus)
             }
 
@@ -182,19 +198,19 @@ class DownloadActivity : AppCompatActivity() {
     private fun showLog(torrentSessionStatus: TorrentSessionStatus) {
         refreshData(torrentSessionStatus)
         when (torrentSessionStatus.state) {
-            State.CHECKING_FILES -> {
+            TorrentStatus.State.CHECKING_FILES -> {
                 //检查已有文件,还未开始下载
                 tv_progress.text = "正在检查文件..."
             }
-            State.DOWNLOADING_METADATA -> {
+            TorrentStatus.State.DOWNLOADING_METADATA -> {
                 //从peers获取元数据
                 tv_progress.text = "正在获取元数据..."
             }
-            State.DOWNLOADING -> {
+            TorrentStatus.State.DOWNLOADING -> {
                 //正在下载,返回下载量
                 tv_progress.text = "下载中 " + BigDecimal((torrentSessionStatus.progress).toDouble()).setScale(2, RoundingMode.HALF_UP).toString() + "%"
             }
-            State.SEEDING -> {
+            TorrentStatus.State.SEEDING -> {
                 //下载完成
                 tv_progress.text = "下载已完成"
             }
@@ -241,9 +257,24 @@ class DownloadActivity : AppCompatActivity() {
                     }
                     .setNegativeButton("取消", null)
             dialog.show()
-        }else {
+        } else {
             super.onBackPressed()
         }
+    }
+
+
+    fun countdown(time: Int): Observable<Int> {
+        var time = time
+        if (time < 0) {
+            time = 0
+        }
+        val countTime = time
+        return Observable.interval(0, 1, TimeUnit.SECONDS)
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .map { increaseTime -> countTime - increaseTime.toInt() }
+                .take((countTime + 1).toLong())
+
     }
 
 }

@@ -1,4 +1,4 @@
-package com.guoqi.magnetplayer
+package com.guoqi.magnetplayer.ui
 
 import android.Manifest
 import android.app.ProgressDialog
@@ -18,6 +18,10 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import com.alibaba.fastjson.JSON
+import com.guoqi.magnetplayer.R
+import com.guoqi.magnetplayer.adapter.RecordAdapter
+import com.guoqi.magnetplayer.bean.RecordBean
+import com.guoqi.magnetplayer.util.MagnetUtils
 import com.lzy.okgo.OkGo
 import com.lzy.okgo.callback.StringCallback
 import com.lzy.okgo.model.Response
@@ -27,6 +31,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.dialog_text_input.view.*
 import java.io.File
+import java.util.*
 import java.util.regex.Pattern
 
 
@@ -67,7 +72,9 @@ class MainActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1);
         }
+
     }
+
 
     private fun initData() {
         btn_search.setOnClickListener {
@@ -163,7 +170,7 @@ class MainActivity : AppCompatActivity() {
     private fun showAddLinkDialog() {
         if (!this.isFinishing) {
             val inputView = layoutInflater.inflate(R.layout.dialog_text_input, null)
-            inputView.et.setText(Utils.getClipboard(this))
+            inputView.et.setText(MagnetUtils.getClipboard(this))
 
             var addLinkDialog = AlertDialog.Builder(this)
                     .setTitle("添加磁链")
@@ -172,8 +179,8 @@ class MainActivity : AppCompatActivity() {
                         val link = inputView.et.text.toString()
                         var url: String = ""
                         when {
-                            link.startsWith(Utils.MAGNET_PREFIX) -> url = link
-                            Utils.isHash(link) -> url = Utils.normalizeMagnetHash(link)
+                            link.startsWith(MagnetUtils.MAGNET_PREFIX) -> url = link
+                            MagnetUtils.isHash(link) -> url = MagnetUtils.normalizeMagnetHash(link)
                             else -> {
                                 Snackbar.make(inputView, "磁链不正确, 请检查", Snackbar.LENGTH_LONG).show()
                             }

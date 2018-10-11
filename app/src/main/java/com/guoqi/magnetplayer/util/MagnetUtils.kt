@@ -1,17 +1,12 @@
-package com.guoqi.magnetplayer
+package com.guoqi.magnetplayer.util
 
 import android.app.Activity
 import android.content.ClipboardManager
 import android.content.Context
 import android.text.TextUtils
-import android.util.TypedValue
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.InputStream
 import java.util.regex.Pattern
 
-object Utils {
+object MagnetUtils {
 
     val INFINITY_SYMBOL = "\u221e"
     val MAGNET_PREFIX = "magnet"
@@ -99,29 +94,6 @@ object Utils {
         val text = clip.getItemAt(0).text ?: return null
 
         return text.toString()
-    }
-
-    fun dpToPx(context: Context, dp: Float): Int {
-        return TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                dp, context.resources.displayMetrics).toInt()
-    }
-
-    @Throws(IOException::class)
-    fun writeBytesToFile(input: InputStream, file: File) {
-        var fos: FileOutputStream? = null
-        try {
-            val data = ByteArray(2048)
-            val inputData = input.read(data)
-            fos = FileOutputStream(file)
-            while (inputData > -1) {
-                fos.write(data, 0, inputData)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        } finally {
-            fos?.close()
-        }
     }
 
 }

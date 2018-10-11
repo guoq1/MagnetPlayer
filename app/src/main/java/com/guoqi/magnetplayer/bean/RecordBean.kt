@@ -1,4 +1,4 @@
-package com.guoqi.magnetplayer
+package com.guoqi.magnetplayer.bean
 
 import java.io.Serializable
 

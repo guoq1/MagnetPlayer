@@ -1,4 +1,4 @@
-package com.guoqi.magnetplayer
+package com.guoqi.magnetplayer.adapter
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -10,6 +10,8 @@ import android.widget.BaseAdapter
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import com.guoqi.magnetplayer.R
+import com.guoqi.magnetplayer.bean.RecordBean
 
 
 class RecordAdapter(var context: Context, var datas: ArrayList<RecordBean.Results>) : BaseAdapter() {

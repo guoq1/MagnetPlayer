@@ -187,7 +187,7 @@
 #-dontwarn com.suchengkeji.android.confusiondemo.md.**
 
 #实体
--keep class com.guoqi.magentplayer.RecordBean{*;}
+-keep class com.guoqi.magentplayer.bean.**
 #对含有反射类的处理
 #-keep class com.suchengkeji.android.confusiondemo.md.** { *; }
 #
