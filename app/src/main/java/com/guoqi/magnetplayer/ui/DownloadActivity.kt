@@ -1,10 +1,9 @@
 package com.guoqi.magnetplayer.ui
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
-import android.os.AsyncTask
-import android.os.Bundle
-import android.os.Environment
+import android.os.*
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
@@ -21,9 +20,9 @@ import com.guoqi.magnetplayer.core.contracts.TorrentSessionListener
 import com.guoqi.magnetplayer.core.models.TorrentSessionStatus
 import com.guoqi.magnetplayer.util.MagnetUtils
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
-import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_download.*
 import java.lang.ref.WeakReference
 import java.math.BigDecimal
@@ -38,9 +37,17 @@ class DownloadActivity : AppCompatActivity() {
     private val torrentPieceAdapter: TorrentPieceAdapter = TorrentPieceAdapter()
     private val scopeProvider: AndroidLifecycleScopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
+    private var handler = @SuppressLint("HandlerLeak")
+    object : Handler() {
+        override fun handleMessage(msg: Message?) {
+
+        }
+    }
+
     companion object {
         val TAG_URI = "uri"
         var isDownloading = false
+        var hasTitle = false
     }
 
     private var uri: Uri? = null
@@ -59,10 +66,7 @@ class DownloadActivity : AppCompatActivity() {
 
         if (uri?.scheme == MagnetUtils.MAGNET_PREFIX) {
             Snackbar.make(pd, "正在获取磁链信息", Snackbar.LENGTH_LONG).show()
-            pd.visibility = View.VISIBLE
-            runOnUiThread {
-                startDecodeTask()
-            }
+            startDecodeTask()
         } else {
             Snackbar.make(pd, "Uri不正确", Snackbar.LENGTH_LONG).show()
         }
@@ -70,15 +74,27 @@ class DownloadActivity : AppCompatActivity() {
 
 
         btn.setOnClickListener {
-            if (torrentSession.isPaused) {
-                torrentSession.resume()
-                btn?.text = "暂停"
+            if (btn.text == "重试") {
+                setContinueClick("重试")
             } else {
-                torrentSession.pause()
-                btn?.text = "继续"
+                setContinueClick(null)
             }
         }
     }
+
+    private fun setContinueClick(retry: String?) {
+        if (torrentSession.isPaused) {
+            torrentSession.resume()
+            btn?.text = "暂停"
+            retry?.let { pd.visibility = View.VISIBLE;countDown(60) }
+        } else {
+            torrentSession.pause()
+            btn?.text = retry ?: "继续"
+            retry?.let { tv_progress.text = "获取元数据超时, 请重试或使用迅雷下载" }
+            pd.visibility = View.GONE
+        }
+    }
+
 
     private fun initRecycleView() {
         rv_download.apply {
@@ -94,14 +110,20 @@ class DownloadActivity : AppCompatActivity() {
     }
 
     private fun startDecodeTask() {
+        pd.visibility = View.VISIBLE
         val torrentSessionOptions = TorrentSessionOptions(downloadLocation = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), onlyDownloadLargestFile = true, enableLogging = false, shouldStream = true)
         torrentSession = TorrentSession(torrentSessionOptions)
         torrentSession.listener = object : TorrentSessionListener {
+            override fun onAlertException(err: String) {
+                Log.e(TAG, "onAlertException:$err")
+            }
+
             override fun onAddTorrent(torrentHandle: TorrentHandle, torrentSessionStatus: TorrentSessionStatus) {
                 //第一步,将磁链转为种子
                 Log.e(TAG, "onAddTorrent" + torrentSessionStatus.toString())
                 isDownloading = true
                 showLog(torrentSessionStatus)
+                countDown(60)
             }
 
             override fun onTorrentResumed(torrentHandle: TorrentHandle, torrentSessionStatus: TorrentSessionStatus) {
@@ -119,16 +141,10 @@ class DownloadActivity : AppCompatActivity() {
                     var title = torrentSessionStatus.magnetUri.toString()
                     if (title.contains("&dn=")) {
                         tv_title.text = title.substring(title.indexOf("&dn=") + 4)
+                        hasTitle = true
                     }
                     Snackbar.make(pd, "下载到: /DownLoad 目录下", Snackbar.LENGTH_LONG).show()
-                    countdown(5)
-                            .autoDisposable(scopeProvider)
-                            .subscribe{
-                                Log.e(TAG,"subscribe")
-                            }
-
                 }
-
                 showLog(torrentSessionStatus)
             }
 
@@ -198,22 +214,22 @@ class DownloadActivity : AppCompatActivity() {
     private fun showLog(torrentSessionStatus: TorrentSessionStatus) {
         refreshData(torrentSessionStatus)
         when (torrentSessionStatus.state) {
-            TorrentStatus.State.CHECKING_FILES -> {
-                //检查已有文件,还未开始下载
-                tv_progress.text = "正在检查文件..."
-            }
-            TorrentStatus.State.DOWNLOADING_METADATA -> {
-                //从peers获取元数据
-                tv_progress.text = "正在获取元数据..."
-            }
+//            TorrentStatus.State.CHECKING_FILES -> {
+//                //检查已有文件,还未开始下载
+//                tv_progress.text = "正在检查文件..."
+//            }
+//            TorrentStatus.State.DOWNLOADING_METADATA -> {
+//                //从peers获取元数据
+//                tv_progress.text = "正在获取元数据..."
+//            }
             TorrentStatus.State.DOWNLOADING -> {
                 //正在下载,返回下载量
-                tv_progress.text = "下载中 " + BigDecimal((torrentSessionStatus.progress).toDouble()).setScale(2, RoundingMode.HALF_UP).toString() + "%"
+                tv_progress.text = "下载中 " + BigDecimal((torrentSessionStatus.progress).toDouble()*100).setScale(2, RoundingMode.HALF_UP).toString() + "%"
             }
-            TorrentStatus.State.SEEDING -> {
-                //下载完成
-                tv_progress.text = "下载已完成"
-            }
+//            TorrentStatus.State.SEEDING -> {
+//                //下载完成
+//                tv_progress.text = "下载已完成"
+//            }
         }
 
     }
@@ -263,18 +279,23 @@ class DownloadActivity : AppCompatActivity() {
     }
 
 
-    fun countdown(time: Int): Observable<Int> {
-        var time = time
-        if (time < 0) {
-            time = 0
-        }
-        val countTime = time
-        return Observable.interval(0, 1, TimeUnit.SECONDS)
-                .subscribeOn(AndroidSchedulers.mainThread())
+    @SuppressLint("CheckResult")
+    fun countDown(countTime: Int) {
+        Observable.interval(0, 1, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .map { increaseTime -> countTime - increaseTime.toInt() }
                 .take((countTime + 1).toLong())
-
+                .subscribe {
+                    if (!hasTitle) {
+                        tv_title.text = "${it}秒"
+                        tv_progress.text = "正在获取元数据..."
+                    }
+                    if (it == 0 && !hasTitle) {
+                        tv_title.text = "未知"
+                        setContinueClick("重试")
+                    }
+                }
     }
 
 }

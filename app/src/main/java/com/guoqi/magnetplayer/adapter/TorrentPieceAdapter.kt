@@ -32,7 +32,7 @@ class TorrentPieceAdapter : RecyclerView.Adapter<TorrentPieceAdapter.PieceViewHo
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PieceViewHolder =
             PieceViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_piece, parent, false))
 
-    override fun getItemCount(): Int = if (isInitialized) torrentSessionBuffer.pieceCount else 0
+    override fun getItemCount(): Int = if (isInitialized) torrentSessionBuffer.pieceCount else 320
 
     override fun onBindViewHolder(holder: PieceViewHolder, position: Int) {
         val context = holder.itemView.context

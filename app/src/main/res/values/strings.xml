@@ -233,6 +233,7 @@
     <string name="delete_selected_tracker">删除所选 tracker ？</string>
     <string name="delete_selected_trackers">删除所选的所有 tracker ？</string>
     <string name="add_trackers">添加 tracker</string>
+    <string name="add_magnet">添加磁链</string>
     <string name="dialog_add_trackers">（每行一个）</string>
     <string name="open_using">打开文件</string>
     <string name="peer_port" formatted="false">端口: %1$d</string>

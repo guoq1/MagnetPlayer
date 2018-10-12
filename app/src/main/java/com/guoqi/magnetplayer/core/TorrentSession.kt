@@ -22,7 +22,7 @@ import java.security.InvalidParameterException
  * This class is used to control a torrent download session.
  */
 @Suppress("MemberVisibilityCanBePrivate", "unused")
-open class TorrentSession(
+class TorrentSession(
         private val torrentSessionOptions: TorrentSessionOptions
 ) {
     companion object {
@@ -35,7 +35,7 @@ open class TorrentSession(
     var listener: TorrentSessionListener? = null
 
     private val sessionParams = SessionParams(torrentSessionOptions.settingsPack)
-    private val alertListener = TorrentSessionAlertListener(this)
+    private val alertListener = TorrentSessionAlertListener(this@TorrentSession)
 
     private val sessionManager = SessionManager(torrentSessionOptions.enableLogging)
 
@@ -74,9 +74,7 @@ open class TorrentSession(
                     , largestFileUri
             )
 
-    private class TorrentSessionAlertListener(
-            torrentSession: TorrentSession
-    ) : AlertListener {
+    private class TorrentSessionAlertListener(torrentSession: TorrentSession) : AlertListener {
 
         private val torrentSession: WeakReference<TorrentSession> = WeakReference(torrentSession)
 
@@ -107,6 +105,7 @@ open class TorrentSession(
                 }
             } catch (e: Exception) {
                 Log.e(Tag, "An exception occurred within torrent session callback", e)
+                torrentSession.get()?.onAlertException(e.message.toString())
             }
         }
 
@@ -457,4 +456,9 @@ open class TorrentSession(
     }
 
 }
+
+private fun TorrentSession?.onAlertException(message: String) {
+    this?.listener?.onAlertException(message)
+}
+
 

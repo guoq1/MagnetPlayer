@@ -105,4 +105,7 @@ interface TorrentSessionListener {
             , torrentSessionStatus: TorrentSessionStatus
     )
 
+    fun onAlertException(err: String)
+
+
 }
