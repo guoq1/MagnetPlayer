@@ -214,22 +214,14 @@ class DownloadActivity : AppCompatActivity() {
     private fun showLog(torrentSessionStatus: TorrentSessionStatus) {
         refreshData(torrentSessionStatus)
         when (torrentSessionStatus.state) {
-//            TorrentStatus.State.CHECKING_FILES -> {
-//                //检查已有文件,还未开始下载
-//                tv_progress.text = "正在检查文件..."
-//            }
-//            TorrentStatus.State.DOWNLOADING_METADATA -> {
-//                //从peers获取元数据
-//                tv_progress.text = "正在获取元数据..."
-//            }
             TorrentStatus.State.DOWNLOADING -> {
                 //正在下载,返回下载量
                 tv_progress.text = "下载中 " + BigDecimal((torrentSessionStatus.progress).toDouble()*100).setScale(2, RoundingMode.HALF_UP).toString() + "%"
             }
-//            TorrentStatus.State.SEEDING -> {
-//                //下载完成
-//                tv_progress.text = "下载已完成"
-//            }
+            TorrentStatus.State.SEEDING -> {
+                //下载完成
+                tv_progress.text = "下载已完成"
+            }
         }
 
     }
