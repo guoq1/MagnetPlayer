@@ -221,3 +221,9 @@
 #okio
 -dontwarn okio.**
 -keep class okio.**{*;}
+
+#dkplayer
+-keep class tv.danmaku.ijk.** { *; }
+-dontwarn tv.danmaku.ijk.**
+-keep class com.dueeeke.videoplayer.** { *; }
+-dontwarn com.dueeeke.videoplayer.**

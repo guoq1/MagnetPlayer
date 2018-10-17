@@ -2,8 +2,11 @@ package com.guoqi.magnetplayer.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
-import android.os.*
+import android.os.AsyncTask
+import android.os.Bundle
+import android.os.Environment
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
@@ -19,7 +22,6 @@ import com.guoqi.magnetplayer.core.TorrentSessionOptions
 import com.guoqi.magnetplayer.core.contracts.TorrentSessionListener
 import com.guoqi.magnetplayer.core.models.TorrentSessionStatus
 import com.guoqi.magnetplayer.util.MagnetUtils
-import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -34,15 +36,8 @@ class DownloadActivity : AppCompatActivity() {
     private val TAG = DownloadActivity::class.java.simpleName
     private lateinit var torrentSession: TorrentSession
     private var startDownloadTask: DownloadTask? = null
-    private val torrentPieceAdapter: TorrentPieceAdapter = TorrentPieceAdapter()
-    private val scopeProvider: AndroidLifecycleScopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
+    private var torrentPieceAdapter: TorrentPieceAdapter = TorrentPieceAdapter()
 
-    private var handler = @SuppressLint("HandlerLeak")
-    object : Handler() {
-        override fun handleMessage(msg: Message?) {
-
-        }
-    }
 
     companion object {
         val TAG_URI = "uri"
@@ -73,23 +68,31 @@ class DownloadActivity : AppCompatActivity() {
 
 
 
-        btn.setOnClickListener {
-            if (btn.text == "重试") {
+        btn_option.setOnClickListener {
+            if (btn_option.text == "重试") {
                 setContinueClick("重试")
             } else {
                 setContinueClick(null)
             }
+        }
+
+        btn_play.setOnClickListener {
+            val intent = Intent(this@DownloadActivity, PlayerActivity::class.java)
+            var path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath + "/${tv_title.text}"
+            Log.e(TAG, "path = $path")
+            intent.putExtra("url", Uri.parse(path))
+            intent.putExtra("title", tv_title.text.toString())
         }
     }
 
     private fun setContinueClick(retry: String?) {
         if (torrentSession.isPaused) {
             torrentSession.resume()
-            btn?.text = "暂停"
+            btn_option?.text = "暂停"
             retry?.let { pd.visibility = View.VISIBLE;countDown(60) }
         } else {
             torrentSession.pause()
-            btn?.text = retry ?: "继续"
+            btn_option?.text = retry ?: "继续"
             retry?.let { tv_progress.text = "获取元数据超时, 请重试或使用迅雷下载" }
             pd.visibility = View.GONE
         }
@@ -142,6 +145,7 @@ class DownloadActivity : AppCompatActivity() {
                     if (title.contains("&dn=")) {
                         tv_title.text = title.substring(title.indexOf("&dn=") + 4)
                         hasTitle = true
+                        btn_play.visibility = View.VISIBLE
                     }
                     Snackbar.make(pd, "下载到: /DownLoad 目录下", Snackbar.LENGTH_LONG).show()
                 }
@@ -216,7 +220,7 @@ class DownloadActivity : AppCompatActivity() {
         when (torrentSessionStatus.state) {
             TorrentStatus.State.DOWNLOADING -> {
                 //正在下载,返回下载量
-                tv_progress.text = "下载中 " + BigDecimal((torrentSessionStatus.progress).toDouble()*100).setScale(2, RoundingMode.HALF_UP).toString() + "%"
+                tv_progress.text = "下载中 " + BigDecimal((torrentSessionStatus.progress).toDouble() * 100).setScale(2, RoundingMode.HALF_UP).toString() + "%"
             }
             TorrentStatus.State.SEEDING -> {
                 //下载完成

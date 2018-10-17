@@ -60,10 +60,11 @@ dependencies {
     api "com.frostwire:jlibtorrent-android-x86_64:1.2.0.18"
     //rxjava2
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
-    //autoDispose
-    implementation 'com.uber.autodispose:autodispose-ktx:1.0.0-RC2'
-    implementation 'com.uber.autodispose:autodispose-android-archcomponents-ktx:1.0.0-RC2'
     //bugly
     implementation 'com.tencent.bugly:crashreport_upgrade:1.3.5'
 
+    //播放器
+    implementation 'com.github.dueeeke.dkplayer:dkplayer-java:2.5.3'
+    implementation 'com.github.dueeeke.dkplayer:dkplayer-armv7a:2.5.3'
+    implementation 'com.github.dueeeke.dkplayer:dkplayer-ui:2.5.3'
 }

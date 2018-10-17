@@ -38,11 +38,27 @@
         android:indeterminate="true"
         android:visibility="gone" />
 
+    <View
+        android:id="@+id/v_center"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
+
     <Button
-        android:id="@+id/btn"
+        android:id="@+id/btn_option"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
+        android:layout_toLeftOf="@+id/v_center"
         android:text="暂停" />
+
+    <Button
+        android:id="@+id/btn_play"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toRightOf="@+id/v_center"
+        android:text="播放"
+        android:visibility="gone" />
 </RelativeLayout>
