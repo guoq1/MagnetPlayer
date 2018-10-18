@@ -10,6 +10,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:theme="@style/AppTheme.AppBarOverlay">
+        <!--增加一个渐变背景色,防止白色背景看不到status的白色文字-->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="21dp"
+            android:background="@drawable/gradient"
+            android:visibility="visible" />
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"

@@ -5,7 +5,9 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
@@ -17,6 +19,7 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.WindowManager
 import com.alibaba.fastjson.JSON
 import com.guoqi.magnetplayer.R
 import com.guoqi.magnetplayer.adapter.RecordAdapter
@@ -56,6 +59,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setStatuesBar()
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
@@ -104,7 +108,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_settings -> true
+            R.id.action_settings -> {
+                var dialog = AlertDialog.Builder(this@MainActivity)
+                        .setTitle("更换搜索源")
+                        .setItems(sourceArr) { _, i ->
+                            source = sourceArr[i]
+                            Snackbar.make(toolbar, source, Snackbar.LENGTH_LONG).show()
+                        }
+                dialog.show()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -144,15 +157,17 @@ class MainActivity : AppCompatActivity() {
                     override fun onSuccess(response: Response<String>) {
                         Log.e("JSON onSuccess", response?.body().toString())
                         var recordBean = JSON.parseObject(response?.body().toString(), RecordBean::class.java) as RecordBean
-                        var list = recordBean.results
-                        recordList.addAll(list)
-                        recordAdapter.resetData(recordList)
+                        recordBean.results?.let {
+                            recordList.addAll(it)
+                            recordAdapter.resetData(recordList)
+                        }
                         removeDialog()
                         if (type == LOAD_REFRESH) {
                             refreshLayout.finishRefresh()
                         } else {
                             refreshLayout.finishLoadMore()
                         }
+
                     }
 
                     override fun onError(response: Response<String>) {
@@ -220,4 +235,23 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    private fun setStatuesBar() {
+        window.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+            //6.0透明处理
+            window.statusBarColor = Color.TRANSPARENT
+        } else
+        //增加7.0通过反射处理status透明
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                try {
+                    val decorViewClazz = Class.forName("com.android.internal.policy.DecorView")
+                    val field = decorViewClazz.getDeclaredField("mSemiTransparentStatusBarColor")
+                    field.isAccessible = true
+                    field.setInt(window.decorView, Color.TRANSPARENT)  //改为透明
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+
+            }
+    }
 }

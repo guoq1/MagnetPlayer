@@ -11,6 +11,7 @@ import android.support.design.widget.Snackbar
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.View
 import com.frostwire.jlibtorrent.TorrentHandle
@@ -89,7 +90,7 @@ class DownloadActivity : AppCompatActivity() {
         if (torrentSession.isPaused) {
             torrentSession.resume()
             btn_option?.text = "暂停"
-            retry?.let { pd.visibility = View.VISIBLE;countDown(60) }
+            retry?.let { pd.visibility = View.VISIBLE;countDown(300) }
         } else {
             torrentSession.pause()
             btn_option?.text = retry ?: "继续"
@@ -101,7 +102,7 @@ class DownloadActivity : AppCompatActivity() {
 
     private fun initRecycleView() {
         rv_download.apply {
-            layoutManager = GridLayoutManager(this@DownloadActivity, 16)!!
+            layoutManager = (GridLayoutManager(this@DownloadActivity, 16) as RecyclerView.LayoutManager?)!!
             adapter = torrentPieceAdapter
         }
     }
@@ -126,7 +127,7 @@ class DownloadActivity : AppCompatActivity() {
                 Log.e(TAG, "onAddTorrent" + torrentSessionStatus.toString())
                 isDownloading = true
                 showLog(torrentSessionStatus)
-                countDown(60)
+                countDown(300)
             }
 
             override fun onTorrentResumed(torrentHandle: TorrentHandle, torrentSessionStatus: TorrentSessionStatus) {

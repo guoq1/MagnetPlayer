@@ -9,7 +9,7 @@ class RecordBean : Serializable {
 
     var currentPage: String = ""
     var currentSourceSite: String = ""
-    lateinit var results: ArrayList<Results>
+    var results = ArrayList<Results>()
 
     constructor()
 

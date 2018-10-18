@@ -32,7 +32,7 @@ class TorrentPieceAdapter : RecyclerView.Adapter<TorrentPieceAdapter.PieceViewHo
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PieceViewHolder =
             PieceViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_piece, parent, false))
 
-    override fun getItemCount(): Int = if (isInitialized) torrentSessionBuffer.pieceCount else 320
+    override fun getItemCount(): Int = if (isInitialized) torrentSessionBuffer.pieceCount else 0
 
     override fun onBindViewHolder(holder: PieceViewHolder, position: Int) {
         val context = holder.itemView.context
@@ -60,8 +60,7 @@ class TorrentPieceAdapter : RecyclerView.Adapter<TorrentPieceAdapter.PieceViewHo
             return ContextCompat.getColor(context, R.color.red)
         }
 
-        if (position > torrentSessionBuffer.bufferHeadIndex
-                && position <= torrentSessionBuffer.bufferTailIndex) {
+        if (position > torrentSessionBuffer.bufferHeadIndex && position <= torrentSessionBuffer.bufferTailIndex) {
             return ContextCompat.getColor(context, R.color.yellow)
         }
 
@@ -69,9 +68,7 @@ class TorrentPieceAdapter : RecyclerView.Adapter<TorrentPieceAdapter.PieceViewHo
     }
 
     fun refreshData(torrentSessionStatus: TorrentSessionStatus) {
-        val downloadedPieceCount = torrentSessionStatus
-                .torrentSessionBuffer
-                .downloadedPieceCount
+        val downloadedPieceCount = torrentSessionStatus.torrentSessionBuffer.downloadedPieceCount
 
         if (downloadedPieceCount != lastCompletedPieceCount) {
             lastCompletedPieceCount = downloadedPieceCount
