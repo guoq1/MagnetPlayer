@@ -9,9 +9,9 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import com.guoqi.magnetplayer.R
 import com.guoqi.magnetplayer.bean.RecordBean
+import org.jetbrains.anko.toast
 
 
 class RecordAdapter(var context: Context, var datas: ArrayList<RecordBean.Results>) : BaseAdapter() {
@@ -60,8 +60,9 @@ class RecordAdapter(var context: Context, var datas: ArrayList<RecordBean.Result
             var cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             cm?.let {
                 cm.primaryClip = ClipData.newPlainText(null, bean?.magnet)
-                Toast.makeText(context, "磁链已复制", Toast.LENGTH_SHORT).show()
+                context.toast("磁链已复制")
             }
+            listener?.onClick(it)
         }
         return convertView
     }
@@ -75,6 +76,10 @@ class RecordAdapter(var context: Context, var datas: ArrayList<RecordBean.Result
         var tv_copy: TextView? = null
     }
 
+    lateinit var listener: View.OnClickListener
+    fun setMagnetCopyClickListener(listener: View.OnClickListener) {
+        this.listener = listener
+    }
 
 }
 

@@ -6,9 +6,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
-import android.os.Environment
-import android.support.design.widget.Snackbar
-import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -22,11 +19,18 @@ import com.guoqi.magnetplayer.core.TorrentSession
 import com.guoqi.magnetplayer.core.TorrentSessionOptions
 import com.guoqi.magnetplayer.core.contracts.TorrentSessionListener
 import com.guoqi.magnetplayer.core.models.TorrentSessionStatus
+import com.guoqi.magnetplayer.ui.MainActivity.Companion.rootPath
 import com.guoqi.magnetplayer.util.MagnetUtils
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_download.*
+import org.jetbrains.anko.alert
+import org.jetbrains.anko.design.longSnackbar
+import org.jetbrains.anko.design.snackbar
+import org.jetbrains.anko.noButton
+import org.jetbrains.anko.yesButton
+import java.io.File
 import java.lang.ref.WeakReference
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -35,7 +39,7 @@ import java.util.concurrent.TimeUnit
 class DownloadActivity : AppCompatActivity() {
 
     private val TAG = DownloadActivity::class.java.simpleName
-    private lateinit var torrentSession: TorrentSession
+    private var torrentSession: TorrentSession? = null
     private var startDownloadTask: DownloadTask? = null
     private var torrentPieceAdapter: TorrentPieceAdapter = TorrentPieceAdapter()
 
@@ -54,17 +58,15 @@ class DownloadActivity : AppCompatActivity() {
 
         initRecycleView()
 
-        uri = if (intent.data != null)
-            intent.data
-        else
-            intent.getParcelableExtra(TAG_URI)
-
+        intent.getStringExtra(TAG_URI)?.let{
+            uri = Uri.parse(it)
+        }
 
         if (uri?.scheme == MagnetUtils.MAGNET_PREFIX) {
-            Snackbar.make(pd, "正在获取磁链信息", Snackbar.LENGTH_LONG).show()
+            pd.longSnackbar("正在获取磁链信息")
             startDecodeTask()
         } else {
-            Snackbar.make(pd, "Uri不正确", Snackbar.LENGTH_LONG).show()
+            pd.snackbar("Uri不正确")
         }
 
 
@@ -79,7 +81,7 @@ class DownloadActivity : AppCompatActivity() {
 
         btn_play.setOnClickListener {
             val intent = Intent(this@DownloadActivity, PlayerActivity::class.java)
-            var path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath + "/${tv_title.text}"
+            val path = "$rootPath/${tv_title.text}"
             Log.e(TAG, "path = $path")
             intent.putExtra("url", Uri.parse(path))
             intent.putExtra("title", tv_title.text.toString())
@@ -87,12 +89,12 @@ class DownloadActivity : AppCompatActivity() {
     }
 
     private fun setContinueClick(retry: String?) {
-        if (torrentSession.isPaused) {
-            torrentSession.resume()
+        if (torrentSession!!.isPaused) {
+            torrentSession?.resume()
             btn_option?.text = "暂停"
             retry?.let { pd.visibility = View.VISIBLE;countDown(300) }
         } else {
-            torrentSession.pause()
+            torrentSession?.pause()
             btn_option?.text = retry ?: "继续"
             retry?.let { tv_progress.text = "获取元数据超时, 请重试或使用迅雷下载" }
             pd.visibility = View.GONE
@@ -115,9 +117,9 @@ class DownloadActivity : AppCompatActivity() {
 
     private fun startDecodeTask() {
         pd.visibility = View.VISIBLE
-        val torrentSessionOptions = TorrentSessionOptions(downloadLocation = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), onlyDownloadLargestFile = true, enableLogging = false, shouldStream = true)
+        val torrentSessionOptions = TorrentSessionOptions(downloadLocation = File(rootPath), onlyDownloadLargestFile = true, enableLogging = false, shouldStream = true)
         torrentSession = TorrentSession(torrentSessionOptions)
-        torrentSession.listener = object : TorrentSessionListener {
+        torrentSession?.listener = object : TorrentSessionListener {
             override fun onAlertException(err: String) {
                 Log.e(TAG, "onAlertException:$err")
             }
@@ -148,7 +150,7 @@ class DownloadActivity : AppCompatActivity() {
                         hasTitle = true
                         btn_play.visibility = View.VISIBLE
                     }
-                    Snackbar.make(pd, "下载到: /DownLoad 目录下", Snackbar.LENGTH_LONG).show()
+                    pd.longSnackbar("下载到: /DownLoad 目录下")
                 }
                 showLog(torrentSessionStatus)
             }
@@ -212,7 +214,7 @@ class DownloadActivity : AppCompatActivity() {
 
         }
 
-        startDownloadTask = DownloadTask(this, torrentSession, uri!!)
+        startDownloadTask = DownloadTask(this, torrentSession!!, uri!!)
         startDownloadTask?.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
     }
 
@@ -256,20 +258,18 @@ class DownloadActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
 
-        torrentSession.listener = null
-        torrentSession.stop()
+        torrentSession?.listener = null
+        torrentSession?.stop()
     }
 
     override fun onBackPressed() {
         if (isDownloading) {
-            var dialog = AlertDialog.Builder(this)
-                    .setTitle("提示")
-                    .setMessage("正在下载中,是否要取消下载")
-                    .setPositiveButton("确定") { _, _ ->
-                        super.onBackPressed()
-                    }
-                    .setNegativeButton("取消", null)
-            dialog.show()
+            alert {
+                title = "提示"
+                message = "正在下载中,是否要取消下载"
+                yesButton { super.onBackPressed() }
+                noButton { }
+            }.show()
         } else {
             super.onBackPressed()
         }

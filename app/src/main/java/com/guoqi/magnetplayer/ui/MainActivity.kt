@@ -11,7 +11,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
-import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
@@ -19,11 +18,15 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
+import android.view.inputmethod.InputMethodManager.HIDE_NOT_ALWAYS
 import com.alibaba.fastjson.JSON
 import com.guoqi.magnetplayer.R
 import com.guoqi.magnetplayer.adapter.RecordAdapter
 import com.guoqi.magnetplayer.bean.RecordBean
+import com.guoqi.magnetplayer.ui.DownloadActivity.Companion.TAG_URI
 import com.guoqi.magnetplayer.util.MagnetUtils
 import com.lzy.okgo.OkGo
 import com.lzy.okgo.callback.StringCallback
@@ -33,6 +36,10 @@ import com.scwang.smartrefresh.layout.header.ClassicsHeader
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.dialog_text_input.view.*
+import org.jetbrains.anko.design.longSnackbar
+import org.jetbrains.anko.design.snackbar
+import org.jetbrains.anko.selector
+import org.jetbrains.anko.startActivity
 import java.io.File
 import java.util.*
 import java.util.regex.Pattern
@@ -99,6 +106,10 @@ class MainActivity : AppCompatActivity() {
             page++
             getSearchList(LOAD_MORE)
         }
+        recordAdapter.setMagnetCopyClickListener(View.OnClickListener {
+            showAddLinkDialog()
+        })
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -109,13 +120,10 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_settings -> {
-                var dialog = AlertDialog.Builder(this@MainActivity)
-                        .setTitle("更换搜索源")
-                        .setItems(sourceArr) { _, i ->
-                            source = sourceArr[i]
-                            Snackbar.make(toolbar, source, Snackbar.LENGTH_LONG).show()
-                        }
-                dialog.show()
+                selector("更换搜索源", sourceArr.toList()) { _, i ->
+                    source = sourceArr[i]
+                    toolbar.snackbar("当前搜索源：$source")
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -131,13 +139,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadDialog() {
-        pd?.show()
+        this?.let {
+            pd?.show()
+        }
     }
 
     fun removeDialog() {
-        pd?.let {
-            if (pd.isShowing) {
-                pd.dismiss()
+        this?.let {
+            pd?.let {
+                if (pd.isShowing) {
+                    pd.dismiss()
+                }
             }
         }
     }
@@ -162,6 +174,7 @@ class MainActivity : AppCompatActivity() {
                             recordAdapter.resetData(recordList)
                         }
                         removeDialog()
+                        hideKeyBoard()
                         if (type == LOAD_REFRESH) {
                             refreshLayout.finishRefresh()
                         } else {
@@ -186,6 +199,7 @@ class MainActivity : AppCompatActivity() {
         if (!this.isFinishing) {
             val inputView = layoutInflater.inflate(R.layout.dialog_text_input, null)
             inputView.et.setText(MagnetUtils.getClipboard(this))
+            inputView.et.let { it.setSelection(it.text.toString().length) }
 
             var addLinkDialog = AlertDialog.Builder(this)
                     .setTitle("添加磁链")
@@ -197,14 +211,12 @@ class MainActivity : AppCompatActivity() {
                             link.startsWith(MagnetUtils.MAGNET_PREFIX) -> url = link
                             MagnetUtils.isHash(link) -> url = MagnetUtils.normalizeMagnetHash(link)
                             else -> {
-                                Snackbar.make(inputView, "磁链不正确, 请检查", Snackbar.LENGTH_LONG).show()
+                                inputView.longSnackbar("磁链不正确, 请检查")
                             }
                         }
 
                         if (!url.isEmpty()) {
-                            val i = Intent(this, DownloadActivity::class.java)
-                            i.putExtra(DownloadActivity.TAG_URI, Uri.parse(url))
-                            startActivity(i)
+                            startActivity<DownloadActivity>(TAG_URI to url)
                         }
                     }
                     .setNegativeButton(R.string.cancel) { _, _ ->
@@ -253,5 +265,10 @@ class MainActivity : AppCompatActivity() {
                 }
 
             }
+    }
+
+    fun hideKeyBoard() {
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(window.decorView.windowToken, HIDE_NOT_ALWAYS)
     }
 }
