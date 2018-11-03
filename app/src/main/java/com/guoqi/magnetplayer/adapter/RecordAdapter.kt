@@ -3,6 +3,7 @@ package com.guoqi.magnetplayer.adapter
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.text.Html
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +16,9 @@ import org.jetbrains.anko.toast
 
 
 class RecordAdapter(var context: Context, var datas: ArrayList<RecordBean.Results>) : BaseAdapter() {
+
+    private var keyWords: String = ""
+
     override fun getCount(): Int {
         return if (datas.isEmpty()) 0 else datas.size
     }
@@ -30,8 +34,9 @@ class RecordAdapter(var context: Context, var datas: ArrayList<RecordBean.Result
     /**
      * 更新数据
      */
-    fun resetData(datas: ArrayList<RecordBean.Results>) {
+    fun resetData(datas: ArrayList<RecordBean.Results>, keyWords: String) {
         this.datas = datas
+        this.keyWords = keyWords
         this.notifyDataSetChanged()
     }
 
@@ -52,11 +57,30 @@ class RecordAdapter(var context: Context, var datas: ArrayList<RecordBean.Result
             convertView.tag = viewHolder
         }
         var bean = datas[position]
-        viewHolder.tv_title?.text = bean?.name
+        if (keyWords.isNotEmpty() && bean.name.isNotEmpty() && bean.name.contains(keyWords)) {
+            val index = bean.name.indexOf(keyWords)
+            val len = keyWords.length
+            val temp = Html.fromHtml(bean.name.substring(0, index)
+                    + "<font color=#FF0000>"
+                    + bean.name.substring(index, index + len) + "</font>"
+                    + bean.name.substring(index + len, bean.name.length))
+
+            viewHolder.tv_title!!.text = temp
+        } else {
+            viewHolder.tv_title!!.text = bean.name
+        }
+
+
         viewHolder.tv_date?.text = bean?.count
         viewHolder.tv_size?.text = bean.formatSize
-        viewHolder.tv_resolution?.text = bean.resolution
-        viewHolder.tv_copy?.setOnClickListener {
+        if (bean.resolution.isNotEmpty()) {
+            viewHolder.tv_resolution?.text = bean.resolution
+            viewHolder.tv_resolution?.setBackgroundResource(R.drawable.bg_tag_gray_trans)
+        } else {
+            viewHolder.tv_resolution?.setBackgroundResource(0)
+        }
+
+        viewHolder.ll_item?.setOnClickListener {
             var cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             cm?.let {
                 cm.primaryClip = ClipData.newPlainText(null, bean?.magnet)

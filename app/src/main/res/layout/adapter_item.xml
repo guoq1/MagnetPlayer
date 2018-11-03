@@ -10,14 +10,15 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="8dp"
         android:orientation="horizontal">
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="1dp"
-            android:src="@android:drawable/presence_online" />
+            android:src="@android:drawable/presence_online"
+            android:visibility="invisible" />
 
         <TextView
             android:id="@+id/tv_title"
@@ -27,13 +28,16 @@
             android:ellipsize="end"
             android:maxLines="2"
             android:text="[星火字幕组][填坑][beta测试版非正式版][名侦探柯南剧场版M19][业火的向日葵][1080P][10bit][简日附带假名].mkv"
-            android:textColor="#333333"
+            android:textColor="#555555"
+            android:textSize="16dp"
             android:textStyle="bold" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
@@ -47,9 +51,15 @@
         <TextView
             android:id="@+id/tv_date"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_tag_gray_trans"
+            android:paddingLeft="8dp"
+            android:paddingTop="1dp"
+            android:paddingRight="8dp"
+            android:paddingBottom="1dp"
             android:text="2018-08-29"
-            android:textColor="#555555" />
+            android:textColor="#888888"
+            android:textSize="10sp" />
 
 
         <TextView
@@ -57,20 +67,32 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
+            android:background="@drawable/bg_tag_gray_trans"
             android:ellipsize="end"
             android:maxLines="2"
+            android:paddingLeft="8dp"
+            android:paddingTop="1dp"
+            android:paddingRight="8dp"
+            android:paddingBottom="1dp"
             android:text="6.83 GB"
-            android:textColor="#555555" />
+            android:textColor="#888888"
+            android:textSize="10sp" />
 
         <TextView
             android:id="@+id/tv_resolution"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
+            android:background="@drawable/bg_tag_gray_trans"
             android:ellipsize="end"
             android:maxLines="2"
-            android:text="1080P"
-            android:textColor="#555555" />
+            android:paddingLeft="8dp"
+            android:paddingTop="1dp"
+            android:paddingRight="8dp"
+            android:paddingBottom="1dp"
+            android:text=""
+            android:textColor="#888888"
+            android:textSize="10sp" />
 
         <View
             android:layout_width="0dp"
@@ -83,8 +105,8 @@
             android:layout_height="36dp"
             android:padding="5dp"
             android:text="复制磁链"
-            android:textSize="12sp"
-            android:visibility="visible" />
+            android:textSize="10sp"
+            android:visibility="gone" />
 
     </LinearLayout>
 

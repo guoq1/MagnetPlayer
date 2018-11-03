@@ -5,7 +5,6 @@ import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -69,6 +68,7 @@ class MainActivity : AppCompatActivity() {
         setStatuesBar()
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
+        toolbar.setTitle(R.string.app_name)
 
         initProgressDialog()
         initData()
@@ -89,6 +89,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun initData() {
         btn_search.setOnClickListener {
+            if (et_key.text.toString().isEmpty()) {
+                toolbar.snackbar("请先输入关键词")
+                return@setOnClickListener
+            }
             loadDialog()
             getSearchList(LOAD_REFRESH)
         }
@@ -171,7 +175,7 @@ class MainActivity : AppCompatActivity() {
                         var recordBean = JSON.parseObject(response?.body().toString(), RecordBean::class.java) as RecordBean
                         recordBean.results?.let {
                             recordList.addAll(it)
-                            recordAdapter.resetData(recordList)
+                            recordAdapter.resetData(recordList, et_key.text.toString().trim())
                         }
                         removeDialog()
                         hideKeyBoard()
@@ -251,7 +255,7 @@ class MainActivity : AppCompatActivity() {
         window.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             //6.0透明处理
-            window.statusBarColor = Color.TRANSPARENT
+            window.statusBarColor = ContextCompat.getColor(this, R.color.colorPrimary) //改为主题色
         } else
         //增加7.0通过反射处理status透明
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -259,7 +263,7 @@ class MainActivity : AppCompatActivity() {
                     val decorViewClazz = Class.forName("com.android.internal.policy.DecorView")
                     val field = decorViewClazz.getDeclaredField("mSemiTransparentStatusBarColor")
                     field.isAccessible = true
-                    field.setInt(window.decorView, Color.TRANSPARENT)  //改为透明
+                    field.setInt(window.decorView, ContextCompat.getColor(this, R.color.colorPrimary))  //改为主题色
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

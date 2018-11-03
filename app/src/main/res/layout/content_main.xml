@@ -11,7 +11,7 @@
     <android.support.v7.widget.LinearLayoutCompat
         android:id="@+id/ll_search"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="45dp"
         android:background="@color/colorPrimary"
         android:gravity="center_vertical"
         android:orientation="horizontal">
@@ -20,20 +20,21 @@
             android:id="@+id/et_key"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="10dp"
+            android:layout_margin="5dp"
             android:layout_weight="1"
             android:background="@drawable/bg_search_input"
             android:hint="请输入关键字"
             android:maxLines="1"
-            android:padding="10dp"
-            android:text="" />
+            android:padding="8dp"
+            android:text=""
+            android:textSize="14sp" />
 
         <android.support.v7.widget.AppCompatButton
             android:id="@+id/btn_search"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:layout_margin="8dp"
-            android:background="@drawable/bg_search_btn"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:background="@drawable/common_bg_selector"
             android:gravity="center"
             android:text="搜索"
             android:textColor="@color/colorPrimary"

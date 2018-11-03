@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MagnetPlayer</string>
+    <string name="app_name">磁力搜索</string>
     <string name="action_settings">搜索源</string>
     <!-- Global string -->
     <string name="ok">确定</string>

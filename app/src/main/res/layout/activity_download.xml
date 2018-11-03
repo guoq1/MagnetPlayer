@@ -23,7 +23,7 @@
         android:id="@+id/rv_download"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/btn"
+        android:layout_above="@+id/v_center"
         android:layout_below="@+id/tv_progress"
         android:background="@android:color/darker_gray"
         android:clipToPadding="false"
