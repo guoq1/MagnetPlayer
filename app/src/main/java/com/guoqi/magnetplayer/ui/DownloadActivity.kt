@@ -17,6 +17,7 @@ import com.frostwire.jlibtorrent.TorrentStatus
 import com.guoqi.magnetplayer.R
 import com.guoqi.magnetplayer.adapter.TorrentPieceAdapter
 import com.guoqi.magnetplayer.core.TorrentSession
+import com.guoqi.magnetplayer.core.TorrentSession.Companion.NO_ROUTER_FOUND
 import com.guoqi.magnetplayer.core.TorrentSessionOptions
 import com.guoqi.magnetplayer.core.contracts.TorrentSessionListener
 import com.guoqi.magnetplayer.core.models.TorrentSessionStatus
@@ -67,7 +68,7 @@ class DownloadActivity : AppCompatActivity() {
         }
 
         if (uri?.scheme == MagnetUtils.MAGNET_PREFIX) {
-            pd.longSnackbar("正在获取磁链信息")
+            pd.longSnackbar("等待时间根据当前P2P网络情况而定...")
             startDecodeTask()
         } else {
             pd.snackbar("Uri不正确")
@@ -140,6 +141,10 @@ class DownloadActivity : AppCompatActivity() {
         torrentSession?.listener = object : TorrentSessionListener {
             override fun onAlertException(err: String) {
                 Log.e(TAG, "onAlertException:$err")
+                if (err == NO_ROUTER_FOUND){
+                    torrentSession?.pause()
+                    torrentSession?.resume()
+                }
             }
 
             override fun onAddTorrent(torrentHandle: TorrentHandle, torrentSessionStatus: TorrentSessionStatus) {

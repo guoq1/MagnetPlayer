@@ -27,6 +27,9 @@ class TorrentSession(
 ) {
     companion object {
         private const val Tag = "TorrentSession"
+
+        //Exception
+        const val NO_ROUTER_FOUND = "could not map port using UPnP: no router found"
     }
 
     /**
@@ -101,7 +104,13 @@ class TorrentSession(
                     AlertType.TORRENT_ERROR -> torrentSession.get()?.onTorrentError(alert as TorrentErrorAlert)
                     AlertType.ADD_TORRENT -> torrentSession.get()?.onAddTorrent(alert as AddTorrentAlert)
                     AlertType.BLOCK_UPLOADED -> torrentSession.get()?.onBlockUploaded(alert as BlockUploadedAlert)
-                    else -> Log.d(Tag, "Unhandled alert: $alert")
+                    else -> {
+                        Log.d(Tag, "Unhandled alert: $alert")
+                        if (alert.toString().contains(NO_ROUTER_FOUND)) {
+                            torrentSession.get()?.onAlertException(NO_ROUTER_FOUND)
+                        }
+
+                    }
                 }
             } catch (e: Exception) {
                 Log.e(Tag, "An exception occurred within torrent session callback", e)
