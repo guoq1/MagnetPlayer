@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
@@ -44,7 +45,6 @@ class DownloadActivity : AppCompatActivity() {
     private var torrentSession: TorrentSession? = null
     private var startDownloadTask: DownloadTask? = null
     private var torrentPieceAdapter: TorrentPieceAdapter = TorrentPieceAdapter()
-
 
     companion object {
         val TAG_URI = "uri"
@@ -112,6 +112,10 @@ class DownloadActivity : AppCompatActivity() {
 
 
     private fun initRecycleView() {
+        tv_log.visibility = View.VISIBLE
+        tv_log.movementMethod = ScrollingMovementMethod.getInstance()
+        rv_download.visibility = View.GONE
+
         rv_download.apply {
             layoutManager = (GridLayoutManager(this@DownloadActivity, 16) as RecyclerView.LayoutManager?)!!
             adapter = torrentPieceAdapter
@@ -139,9 +143,21 @@ class DownloadActivity : AppCompatActivity() {
         val torrentSessionOptions = TorrentSessionOptions(downloadLocation = File(rootPath), onlyDownloadLargestFile = true, enableLogging = false, shouldStream = true)
         torrentSession = TorrentSession(torrentSessionOptions)
         torrentSession?.listener = object : TorrentSessionListener {
+            override fun onLogMessage(log: String) {
+                //打印日志
+                if (tv_log.visibility == View.VISIBLE) {
+                    runOnUiThread {
+                        tv_log.text = """$log\n${tv_log.text}"""
+                        if (tv_log.text.length > 4096) {
+                            tv_log.text = "> 自动清除日志 "
+                        }
+                    }
+                }
+            }
+
             override fun onAlertException(err: String) {
                 Log.e(TAG, "onAlertException:$err")
-                if (err == NO_ROUTER_FOUND){
+                if (err == NO_ROUTER_FOUND) {
                     torrentSession?.pause()
                     torrentSession?.resume()
                 }
@@ -153,6 +169,7 @@ class DownloadActivity : AppCompatActivity() {
                 isDownloading = true
                 showLog(torrentSessionStatus)
                 countDown(300)
+                runOnUiThread { pd.visibility = View.GONE }
             }
 
             override fun onTorrentResumed(torrentHandle: TorrentHandle, torrentSessionStatus: TorrentSessionStatus) {
@@ -242,14 +259,20 @@ class DownloadActivity : AppCompatActivity() {
     }
 
     private fun showLog(torrentSessionStatus: TorrentSessionStatus) {
-        refreshData(torrentSessionStatus)
         when (torrentSessionStatus.state) {
             TorrentStatus.State.DOWNLOADING -> {
                 //正在下载,返回下载量
+                if (tv_log.visibility == View.VISIBLE) {
+                    rv_download.visibility = View.VISIBLE
+                    tv_log.visibility = View.GONE
+                }
+
+                refreshData(torrentSessionStatus)
                 tv_progress.text = "下载中 " + BigDecimal((torrentSessionStatus.progress).toDouble() * 100).setScale(2, RoundingMode.HALF_UP).toString() + "%"
             }
             TorrentStatus.State.SEEDING -> {
                 //下载完成
+                refreshData(torrentSessionStatus)
                 tv_progress.text = "下载已完成"
             }
         }

@@ -88,7 +88,6 @@ class TorrentSession(
                     Log.w(Tag, "Ignoring alert with invalid torrent handle: ${alert.type()}")
                     return
                 }
-
                 when (alert.type()) {
                     AlertType.DHT_BOOTSTRAP -> torrentSession.get()?.onDhtBootstrap()
                     AlertType.DHT_STATS -> torrentSession.get()?.onDhtStats()
@@ -106,6 +105,7 @@ class TorrentSession(
                     AlertType.BLOCK_UPLOADED -> torrentSession.get()?.onBlockUploaded(alert as BlockUploadedAlert)
                     else -> {
                         Log.d(Tag, "Unhandled alert: $alert")
+                        torrentSession.get()?.onLogMessage(alert.toString())
                         if (alert.toString().contains(NO_ROUTER_FOUND)) {
                             torrentSession.get()?.onAlertException(NO_ROUTER_FOUND)
                         }
@@ -468,6 +468,10 @@ class TorrentSession(
 
 private fun TorrentSession?.onAlertException(message: String) {
     this?.listener?.onAlertException(message)
+}
+
+private fun TorrentSession?.onLogMessage(message: String) {
+    this?.listener?.onLogMessage(message)
 }
 
 

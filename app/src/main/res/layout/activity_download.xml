@@ -19,8 +19,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/toolbar"
-        android:padding="8dp"
         android:gravity="center"
+        android:padding="8dp"
         android:text="正在查找，请耐心等待..."
         android:textColor="@color/white" />
 
@@ -29,8 +29,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/tv_title"
-        android:padding="8dp"
         android:gravity="right"
+        android:padding="8dp"
         android:text=""
         android:textColor="@color/white" />
 
@@ -43,7 +43,23 @@
         android:background="#dddddd"
         android:clipToPadding="false"
         android:padding="8dp"
-        android:scrollbars="vertical" />
+        android:scrollbars="vertical"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tv_log"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_above="@+id/ll_option"
+        android:layout_below="@+id/tv_progress"
+        android:background="#dddddd"
+        android:clickable="false"
+        android:gravity="top|left"
+        android:padding="10dp"
+        android:scrollbars="vertical"
+        android:textSize="12sp"
+        android:text=""
+        android:visibility="visible" />
 
     <ProgressBar
         android:id="@+id/pd"
