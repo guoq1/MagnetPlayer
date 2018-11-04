@@ -56,8 +56,8 @@ class DownloadActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_download)
-        setSupportActionBar(toolbar)
         toolbar.title = "磁力下载"
+        setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeButtonEnabled(true)
         initRecycleView()
@@ -103,7 +103,8 @@ class DownloadActivity : AppCompatActivity() {
             torrentSession?.pause()
             btn_option.visibility = View.VISIBLE
             btn_option?.text = retry ?: "继续"
-            retry?.let { tv_progress.text = "获取元数据超时, 请重试或使用迅雷下载" }
+            retry?.let { tv_progress.text = "下载失败" }
+            tv_title.text = "获取元数据超时, 可尝试复制磁链到迅雷..."
             pd.visibility = View.GONE
         }
     }
@@ -312,11 +313,10 @@ class DownloadActivity : AppCompatActivity() {
                 .take((countTime + 1).toLong())
                 .subscribe {
                     if (!hasTitle) {
-                        tv_title.text = "${it}秒"
-                        tv_progress.text = "正在获取元数据..."
+                        tv_title.text = "正在获取元数据..."
+                        tv_progress.text = "${it}秒"
                     }
                     if (it == 0 && !hasTitle) {
-                        tv_title.text = "提示：由于长时间未获取到P2P元数据，可尝试复制磁链到迅雷下载！"
                         setContinueClick("重试")
                     }
                 }
