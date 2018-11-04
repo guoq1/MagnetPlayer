@@ -88,6 +88,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun initData() {
+        tv_source.text = "当前搜素源：$source"
         btn_search.setOnClickListener {
             if (et_key.text.toString().isEmpty()) {
                 toolbar.snackbar("请先输入关键词")
@@ -126,7 +127,8 @@ class MainActivity : AppCompatActivity() {
             R.id.action_settings -> {
                 selector("更换搜索源", sourceArr.toList()) { _, i ->
                     source = sourceArr[i]
-                    toolbar.snackbar("当前搜索源：$source")
+                    tv_source.text = "当前搜素源：$source"
+                    toolbar.snackbar("切换到搜索源：$source")
                 }
                 true
             }

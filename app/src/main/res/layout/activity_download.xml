@@ -1,14 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/colorPrimary">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:titleTextColor="@color/white"
+        android:background="@color/colorPrimary"
+        app:popupTheme="@style/ToolbarPopupTheme"
+        app:theme="@style/ThemeToolbar"/>
 
     <TextView
         android:id="@+id/tv_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/toolbar"
         android:layout_margin="8dp"
-        android:text="正在获取..." />
+        android:text="正在获取，请耐心等待..."
+        android:textColor="@color/white" />
 
     <TextView
         android:id="@+id/tv_progress"
@@ -17,15 +30,16 @@
         android:layout_below="@+id/tv_title"
         android:layout_margin="8dp"
         android:gravity="right"
-        android:text="" />
+        android:text=""
+        android:textColor="@color/white" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_download"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/v_center"
+        android:layout_above="@+id/ll_option"
         android:layout_below="@+id/tv_progress"
-        android:background="@android:color/darker_gray"
+        android:background="@android:color/lighter_gray"
         android:clipToPadding="false"
         android:padding="8dp" />
 
@@ -38,27 +52,30 @@
         android:indeterminate="true"
         android:visibility="gone" />
 
-    <View
-        android:id="@+id/v_center"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true" />
-
-    <Button
-        android:id="@+id/btn_option"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/ll_option"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_toLeftOf="@+id/v_center"
-        android:text="暂停" />
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/btn_play"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@+id/v_center"
-        android:text="播放"
-        android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btn_option"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:text="暂停"
+            android:visibility="gone"/>
+
+        <Button
+            android:id="@+id/btn_play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:text="播放"
+            android:visibility="gone" />
+    </LinearLayout>
 </RelativeLayout>

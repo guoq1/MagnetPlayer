@@ -48,12 +48,12 @@ class RecordAdapter(var context: Context, var datas: ArrayList<RecordBean.Result
         } else {
             convertView = LayoutInflater.from(context).inflate(R.layout.adapter_item, null)
             viewHolder = ViewHolder()
-            viewHolder.ll_item = convertView!!.findViewById<View>(R.id.ll_item) as LinearLayout
-            viewHolder.tv_title = convertView!!.findViewById<TextView>(R.id.tv_title) as TextView
-            viewHolder.tv_date = convertView!!.findViewById<TextView>(R.id.tv_date) as TextView
-            viewHolder.tv_size = convertView!!.findViewById<TextView>(R.id.tv_size) as TextView
-            viewHolder.tv_resolution = convertView!!.findViewById<TextView>(R.id.tv_resolution) as TextView
-            viewHolder.tv_copy = convertView!!.findViewById<TextView>(R.id.tv_copy) as TextView
+            viewHolder.ll_item = convertView.findViewById<View>(R.id.ll_item) as LinearLayout
+            viewHolder.tv_title = convertView.findViewById<TextView>(R.id.tv_title) as TextView
+            viewHolder.tv_date = convertView.findViewById<TextView>(R.id.tv_date) as TextView
+            viewHolder.tv_size = convertView.findViewById<TextView>(R.id.tv_size) as TextView
+            viewHolder.tv_resolution = convertView.findViewById<TextView>(R.id.tv_resolution) as TextView
+            viewHolder.tv_copy = convertView.findViewById<TextView>(R.id.tv_copy) as TextView
             convertView.tag = viewHolder
         }
         var bean = datas[position]
@@ -71,12 +71,13 @@ class RecordAdapter(var context: Context, var datas: ArrayList<RecordBean.Result
         }
 
 
-        viewHolder.tv_date?.text = bean?.count
+        viewHolder.tv_date?.text = bean.count
         viewHolder.tv_size?.text = bean.formatSize
         if (bean.resolution.isNotEmpty()) {
             viewHolder.tv_resolution?.text = bean.resolution
             viewHolder.tv_resolution?.setBackgroundResource(R.drawable.bg_tag_gray_trans)
         } else {
+            viewHolder.tv_resolution?.text = ""
             viewHolder.tv_resolution?.setBackgroundResource(0)
         }
 
@@ -88,7 +89,7 @@ class RecordAdapter(var context: Context, var datas: ArrayList<RecordBean.Result
             }
             listener?.onClick(it)
         }
-        return convertView
+        return convertView!!
     }
 
     internal class ViewHolder {

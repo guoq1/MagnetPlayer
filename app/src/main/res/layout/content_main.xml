@@ -42,11 +42,23 @@
 
     </android.support.v7.widget.LinearLayoutCompat>
 
+    <TextView
+        android:id="@+id/tv_source"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ll_search"
+        android:background="@color/colorPrimary"
+        android:paddingLeft="8dp"
+        android:paddingBottom="5dp"
+        android:text="当前搜索源:"
+        android:textColor="#AAAAAA"
+        android:textSize="10sp" />
+
     <com.scwang.smartrefresh.layout.SmartRefreshLayout
         android:id="@+id/refreshLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/ll_search">
+        android:layout_below="@+id/tv_source">
 
         <ListView
             android:id="@+id/lv_record"

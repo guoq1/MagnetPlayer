@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
+import android.view.MenuItem
 import android.view.View
 import com.frostwire.jlibtorrent.TorrentHandle
 import com.frostwire.jlibtorrent.TorrentStatus
@@ -55,10 +56,13 @@ class DownloadActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_download)
-
+        setSupportActionBar(toolbar)
+        toolbar.title = "下载"
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeButtonEnabled(true)
         initRecycleView()
 
-        intent.getStringExtra(TAG_URI)?.let{
+        intent.getStringExtra(TAG_URI)?.let {
             uri = Uri.parse(it)
         }
 
@@ -85,6 +89,7 @@ class DownloadActivity : AppCompatActivity() {
             Log.e(TAG, "path = $path")
             intent.putExtra("url", Uri.parse(path))
             intent.putExtra("title", tv_title.text.toString())
+            startActivity(intent)
         }
     }
 
@@ -93,8 +98,10 @@ class DownloadActivity : AppCompatActivity() {
             torrentSession?.resume()
             btn_option?.text = "暂停"
             retry?.let { pd.visibility = View.VISIBLE;countDown(300) }
+            btn_option.visibility = View.GONE
         } else {
             torrentSession?.pause()
+            btn_option.visibility = View.VISIBLE
             btn_option?.text = retry ?: "继续"
             retry?.let { tv_progress.text = "获取元数据超时, 请重试或使用迅雷下载" }
             pd.visibility = View.GONE
@@ -113,6 +120,16 @@ class DownloadActivity : AppCompatActivity() {
         rv_download.post {
             torrentPieceAdapter.refreshData(data)
         }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item?.itemId) {
+            android.R.id.home -> {
+                onBackPressed()
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun startDecodeTask() {
@@ -266,7 +283,7 @@ class DownloadActivity : AppCompatActivity() {
         if (isDownloading) {
             alert {
                 title = "提示"
-                message = "正在下载中,是否要取消下载"
+                message = "正在下载中，是否要取消下载？"
                 yesButton { super.onBackPressed() }
                 noButton { }
             }.show()
@@ -289,7 +306,7 @@ class DownloadActivity : AppCompatActivity() {
                         tv_progress.text = "正在获取元数据..."
                     }
                     if (it == 0 && !hasTitle) {
-                        tv_title.text = "未知"
+                        tv_title.text = "提示：由于长时间未获取到P2P元数据，可尝试复制磁链到迅雷下载！"
                         setContinueClick("重试")
                     }
                 }
