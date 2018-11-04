@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/colorPrimary">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        app:titleTextColor="@color/white"
         android:background="@color/colorPrimary"
         app:popupTheme="@style/ToolbarPopupTheme"
-        app:theme="@style/ThemeToolbar"/>
+        app:theme="@style/ThemeToolbar"
+        app:titleTextColor="@color/white" />
 
     <TextView
         android:id="@+id/tv_title"
@@ -39,9 +39,10 @@
         android:layout_height="match_parent"
         android:layout_above="@+id/ll_option"
         android:layout_below="@+id/tv_progress"
-        android:background="@android:color/lighter_gray"
+        android:background="#dddddd"
         android:clipToPadding="false"
-        android:padding="8dp" />
+        android:padding="8dp"
+        android:scrollbars="vertical" />
 
     <ProgressBar
         android:id="@+id/pd"
@@ -68,7 +69,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:text="暂停"
-            android:visibility="gone"/>
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/btn_play"

@@ -57,7 +57,7 @@ class DownloadActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_download)
         setSupportActionBar(toolbar)
-        toolbar.title = "下载"
+        toolbar.title = "磁力下载"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeButtonEnabled(true)
         initRecycleView()
@@ -277,6 +277,16 @@ class DownloadActivity : AppCompatActivity() {
 
         torrentSession?.listener = null
         torrentSession?.stop()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        torrentSession?.pause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        torrentSession?.resume()
     }
 
     override fun onBackPressed() {

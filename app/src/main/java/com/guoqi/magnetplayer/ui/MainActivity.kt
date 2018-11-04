@@ -14,6 +14,7 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.text.Html
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -60,6 +61,7 @@ class MainActivity : AppCompatActivity() {
     private var page = 1
     private var sourceArr = arrayOf("种子搜", "磁力吧", "BT兔子", "idope", "BTDB", "BT4G", "屌丝搜", "AOYOSO")
     private var source = sourceArr[0]
+    private var SOURCE_TEMPLATE = Html.fromHtml("""当前搜索源为：<font color=#FFFFFF>"$source"</font> ，搜索结果来自DHT网络。""")
     private var recordList = ArrayList<RecordBean.Results>()
     private lateinit var recordAdapter: RecordAdapter
 
@@ -88,7 +90,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun initData() {
-        tv_source.text = "当前搜素源：$source"
+        tv_source.text = SOURCE_TEMPLATE
         btn_search.setOnClickListener {
             if (et_key.text.toString().isEmpty()) {
                 toolbar.snackbar("请先输入关键词")
@@ -127,7 +129,7 @@ class MainActivity : AppCompatActivity() {
             R.id.action_settings -> {
                 selector("更换搜索源", sourceArr.toList()) { _, i ->
                     source = sourceArr[i]
-                    tv_source.text = "当前搜素源：$source"
+                    tv_source.text = SOURCE_TEMPLATE
                     toolbar.snackbar("切换到搜索源：$source")
                 }
                 true
