@@ -1,13 +1,15 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="android:textColorSecondary">@color/white</item>
+        <item name="colorControlNormal">@color/white</item>
 
     </style>
 
@@ -15,7 +17,7 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
-    <!--新增一个item，用于控制menu-->
+    <!--toolbar点击三个点弹出样式-->
     <style name="ToolbarPopupTheme" parent="@style/ThemeOverlay.AppCompat.Dark">
         <item name="android:colorBackground">@color/white</item>
         <item name="android:textColor">@color/black</item>
@@ -24,8 +26,8 @@
 
     <style name="OverflowMenuStyles" parent="Widget.AppCompat.Light.PopupMenu.Overflow">
         <item name="overlapAnchor">true</item>  <!--把该属性改为false即可使menu位置位于toolbar之下-->
-        <item name="android:dropDownVerticalOffset">8dp</item>
-        <item name="android:dropDownHorizontalOffset">10dp</item>
+        <item name="android:dropDownVerticalOffset">0dp</item>
+        <item name="android:dropDownHorizontalOffset">-10dp</item>
         <!--<item name="android:src">@android:drawable/ic_menu_more</item>-->
     </style>
 
@@ -36,16 +38,6 @@
         <item name="android:popupBackground">?attr/colorPrimary</item>
         <item name="android:dropDownVerticalOffset">20dip</item>
         <item name="android:dropDownHorizontalOffset">0dip</item>
-    </style>
-
-    <style name="ThemeToolbar" parent="Theme.AppCompat.Light">
-        <item name="colorPrimary">@color/colorPrimaryDark</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="android:textColorPrimary">@color/white</item>
-        <!-- navigation icon color -->
-        <item name="colorControlNormal">@color/white</item>
-        <!-- color of the menu overflow icon -->
-        <item name="android:textColorSecondary">@color/white</item>
     </style>
 
 </resources>

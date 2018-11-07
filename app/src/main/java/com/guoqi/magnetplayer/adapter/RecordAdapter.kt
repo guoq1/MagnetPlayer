@@ -3,59 +3,30 @@ package com.guoqi.magnetplayer.adapter
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.support.v7.widget.RecyclerView
 import android.text.Html
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.guoqi.magnetplayer.R
 import com.guoqi.magnetplayer.bean.RecordBean
 import org.jetbrains.anko.toast
 
-
-class RecordAdapter(var context: Context, var datas: ArrayList<RecordBean.Results>) : BaseAdapter() {
+class RecordAdapter(private var mContext: Context, private var datas: ArrayList<RecordBean.Results>) : RecyclerView.Adapter<RecordAdapter.ViewHolder>() {
 
     private var keyWords: String = ""
 
-    override fun getCount(): Int {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view = View.inflate(mContext, R.layout.adapter_result_item, null)
+        return ViewHolder(view)
+    }
+
+    override fun getItemCount(): Int {
         return if (datas.isEmpty()) 0 else datas.size
     }
 
-    override fun getItem(position: Int): RecordBean.Results? {
-        return if (datas.isEmpty()) null else datas[position]
-    }
-
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
-    }
-
-    /**
-     * 更新数据
-     */
-    fun resetData(datas: ArrayList<RecordBean.Results>, keyWords: String) {
-        this.datas = datas
-        this.keyWords = keyWords
-        this.notifyDataSetChanged()
-    }
-
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        var convertView = convertView
-        val viewHolder: ViewHolder
-        if (convertView != null) {
-            viewHolder = convertView.tag as ViewHolder
-        } else {
-            convertView = LayoutInflater.from(context).inflate(R.layout.adapter_item, null)
-            viewHolder = ViewHolder()
-            viewHolder.ll_item = convertView.findViewById<View>(R.id.ll_item) as LinearLayout
-            viewHolder.tv_title = convertView.findViewById<TextView>(R.id.tv_title) as TextView
-            viewHolder.tv_date = convertView.findViewById<TextView>(R.id.tv_date) as TextView
-            viewHolder.tv_size = convertView.findViewById<TextView>(R.id.tv_size) as TextView
-            viewHolder.tv_resolution = convertView.findViewById<TextView>(R.id.tv_resolution) as TextView
-            viewHolder.tv_copy = convertView.findViewById<TextView>(R.id.tv_copy) as TextView
-            convertView.tag = viewHolder
-        }
+    override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
         var bean = datas[position]
         if (keyWords.isNotEmpty() && bean.name.isNotEmpty() && bean.name.contains(keyWords)) {
             val index = bean.name.indexOf(keyWords)
@@ -75,31 +46,40 @@ class RecordAdapter(var context: Context, var datas: ArrayList<RecordBean.Result
         viewHolder.tv_size?.text = bean.formatSize
         if (bean.resolution.isNotEmpty()) {
             viewHolder.tv_resolution?.text = bean.resolution
-            viewHolder.tv_resolution?.setBackgroundResource(R.drawable.bg_tag_gray_trans)
+            viewHolder.tv_resolution?.setBackgroundResource(com.guoqi.magnetplayer.R.drawable.bg_tag_gray_trans)
         } else {
             viewHolder.tv_resolution?.text = ""
             viewHolder.tv_resolution?.setBackgroundResource(0)
         }
 
         viewHolder.ll_item?.setOnClickListener {
-            var cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            var cm = mContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             cm?.let {
                 cm.primaryClip = ClipData.newPlainText(null, bean?.magnet)
-                context.toast("磁链已复制")
+                mContext.toast("磁链已复制")
             }
             listener?.onClick(it)
         }
-        return convertView!!
     }
 
-    internal class ViewHolder {
-        var ll_item: LinearLayout? = null
-        var tv_title: TextView? = null
-        var tv_date: TextView? = null
-        var tv_size: TextView? = null
-        var tv_resolution: TextView? = null
-        var tv_copy: TextView? = null
+    /**
+     * 更新数据
+     */
+    fun resetData(datas: ArrayList<RecordBean.Results>, keyWords: String) {
+        this.datas = datas
+        this.keyWords = keyWords
+        this.notifyDataSetChanged()
     }
+
+    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        var ll_item: LinearLayout = itemView.findViewById(R.id.ll_item)
+        var tv_title: TextView = itemView.findViewById(R.id.tv_title)
+        var tv_date: TextView = itemView.findViewById(R.id.tv_date)
+        var tv_size: TextView = itemView.findViewById(R.id.tv_size)
+        var tv_resolution: TextView = itemView.findViewById(R.id.tv_resolution)
+        var tv_copy: TextView = itemView.findViewById(R.id.tv_copy)
+    }
+
 
     lateinit var listener: View.OnClickListener
     fun setMagnetCopyClickListener(listener: View.OnClickListener) {
@@ -107,4 +87,5 @@ class RecordAdapter(var context: Context, var datas: ArrayList<RecordBean.Result
     }
 
 }
+
 

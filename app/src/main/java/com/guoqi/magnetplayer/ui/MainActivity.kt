@@ -14,6 +14,7 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
 import android.text.Html
 import android.util.Log
 import android.view.Menu
@@ -26,15 +27,19 @@ import com.alibaba.fastjson.JSON
 import com.guoqi.magnetplayer.R
 import com.guoqi.magnetplayer.adapter.RecordAdapter
 import com.guoqi.magnetplayer.bean.RecordBean
+import com.guoqi.magnetplayer.ui.DownloadActivity.Companion.IMG_FORMAT
+import com.guoqi.magnetplayer.ui.DownloadActivity.Companion.MOV_FORMAT
+import com.guoqi.magnetplayer.ui.DownloadActivity.Companion.REQUESTCODE_FROM_ACTIVITY
 import com.guoqi.magnetplayer.ui.DownloadActivity.Companion.TAG_URI
 import com.guoqi.magnetplayer.util.MagnetUtils
+import com.leon.lfilepickerlibrary.LFilePicker
+import com.leon.lfilepickerlibrary.utils.Constant
 import com.lzy.okgo.OkGo
 import com.lzy.okgo.callback.StringCallback
 import com.lzy.okgo.model.Response
 import com.scwang.smartrefresh.layout.footer.ClassicsFooter
 import com.scwang.smartrefresh.layout.header.ClassicsHeader
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.dialog_text_input.view.*
 import org.jetbrains.anko.design.longSnackbar
 import org.jetbrains.anko.design.snackbar
@@ -54,23 +59,23 @@ class MainActivity : AppCompatActivity() {
         val rootPath = Environment.getExternalStorageDirectory().absolutePath + File.separator + "MagnetPlayer"
         const val LOAD_REFRESH = 1001
         const val LOAD_MORE = 1002
-
     }
 
     private lateinit var pd: ProgressDialog
     private var page = 1
     private var sourceArr = arrayOf("种子搜", "磁力吧", "BT兔子", "idope", "BTDB", "BT4G", "屌丝搜", "AOYOSO")
     private var source = sourceArr[0]
-    private var SOURCE_TEMPLATE = Html.fromHtml("""当前搜索源为：<font color=#FFFFFF>"$source"</font> ，搜索结果来自DHT网络。""")
+    private var SOURCE_TEMPLATE = """当前搜索源为：<font color=#FFFFFF>"%s"</font> ，搜索结果来自DHT网络。"""
     private var recordList = ArrayList<RecordBean.Results>()
     private lateinit var recordAdapter: RecordAdapter
+    private lateinit var noView: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setStatuesBar()
+        //setStatuesBar()不需要设置
         setContentView(R.layout.activity_main)
-        setSupportActionBar(toolbar)
         toolbar.setTitle(R.string.app_name)
+        setSupportActionBar(toolbar)
 
         initProgressDialog()
         initData()
@@ -90,7 +95,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun initData() {
-        tv_source.text = SOURCE_TEMPLATE
+        tv_source.text = Html.fromHtml(String.format(SOURCE_TEMPLATE, source))
         btn_search.setOnClickListener {
             if (et_key.text.toString().isEmpty()) {
                 toolbar.snackbar("请先输入关键词")
@@ -101,7 +106,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         recordAdapter = RecordAdapter(this, recordList)
-        lv_record.adapter = recordAdapter
+        rv_record.adapter = recordAdapter
+        rv_record.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        rv_record.setmEmptyView(empty_view)
+
 
         refreshLayout.setRefreshHeader(ClassicsHeader(this))
         refreshLayout.setRefreshFooter(ClassicsFooter(this))
@@ -129,9 +137,25 @@ class MainActivity : AppCompatActivity() {
             R.id.action_settings -> {
                 selector("更换搜索源", sourceArr.toList()) { _, i ->
                     source = sourceArr[i]
-                    tv_source.text = SOURCE_TEMPLATE
+                    tv_source.text = Html.fromHtml(String.format(SOURCE_TEMPLATE, source))
                     toolbar.snackbar("切换到搜索源：$source")
                 }
+                true
+            }
+            R.id.action_download -> {
+                LFilePicker()
+                        .withActivity(this)
+                        .withRequestCode(REQUESTCODE_FROM_ACTIVITY)
+                        .withStartPath(rootPath)
+                        .withIsGreater(true)//过滤文件大小 小于指定大小的文件
+                        .withFileSize(500 * 1024)//指定文件大小为500K
+                        .withTitle("下载目录")
+                        .withTitleColor("#FFFFFF")
+                        .withBackIcon(Constant.BACKICON_STYLETHREE)
+                        .withBackgroundColor("#333333")
+                        .withFileFilter(MOV_FORMAT + IMG_FORMAT)
+                        .withMutilyMode(false)
+                        .start()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -259,7 +283,7 @@ class MainActivity : AppCompatActivity() {
         window.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             //6.0透明处理
-            window.statusBarColor = ContextCompat.getColor(this, R.color.colorPrimary) //改为主题色
+            window.statusBarColor = ContextCompat.getColor(this, R.color.trans) //改为透明栏
         } else
         //增加7.0通过反射处理status透明
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -267,7 +291,7 @@ class MainActivity : AppCompatActivity() {
                     val decorViewClazz = Class.forName("com.android.internal.policy.DecorView")
                     val field = decorViewClazz.getDeclaredField("mSemiTransparentStatusBarColor")
                     field.isAccessible = true
-                    field.setInt(window.decorView, ContextCompat.getColor(this, R.color.colorPrimary))  //改为主题色
+                    field.setInt(window.decorView, ContextCompat.getColor(this, R.color.trans))  //改为透明栏
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

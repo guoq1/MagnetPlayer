@@ -1,43 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.MainActivity">
+    tools:context=".ui.MainActivity"
+    tools:showIn="@layout/activity_main">
 
-    <android.support.design.widget.AppBarLayout
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        app:popupTheme="@style/ToolbarPopupTheme"
+        app:titleTextColor="@color/white" />
+
+    <android.support.v7.widget.LinearLayoutCompat
+        android:id="@+id/ll_search"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_below="@+id/toolbar"
+        android:background="@color/colorPrimary"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <android.support.v7.widget.AppCompatEditText
+            android:id="@+id/et_key"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_search_input"
+            android:hint="请输入关键字"
+            android:maxLines="1"
+            android:padding="8dp"
+            android:text=""
+            android:textSize="14sp" />
+
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/btn_search"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:background="@drawable/common_bg_selector"
+            android:gravity="center"
+            android:text="搜索"
+            android:textColor="@color/colorAccent"
+            android:textStyle="bold" />
+
+    </android.support.v7.widget.LinearLayoutCompat>
+
+    <TextView
+        android:id="@+id/tv_source"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/ll_search"
         android:background="@color/colorPrimary"
-        app:elevation="0dp">
-        <!--增加一个渐变背景色,防止白色背景看不到status的白色文字-->
-        <View
+        android:paddingLeft="8dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="8dp"
+        android:text="当前搜索源:"
+        android:textColor="#AAAAAA"
+        android:textSize="10sp" />
+
+    <com.scwang.smartrefresh.layout.SmartRefreshLayout
+        android:id="@+id/refreshLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/tv_source">
+
+        <com.leon.lfilepickerlibrary.widget.EmptyRecyclerView
+            android:id="@+id/rv_record"
             android:layout_width="match_parent"
-            android:layout_height="21dp"
-            android:background="@color/colorPrimary"
-            android:visibility="invisible" />
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/ll_search" />
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:titleTextColor="@color/white"
-            android:background="@color/colorPrimary"
-            app:popupTheme="@style/ToolbarPopupTheme"
-            app:theme="@style/ThemeToolbar"/>
+    </com.scwang.smartrefresh.layout.SmartRefreshLayout>
 
-    </android.support.design.widget.AppBarLayout>
+    <include
+        android:id="@+id/empty_view"
+        layout="@layout/lfile_emptyview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/tv_source" />
 
-    <include layout="@layout/content_main"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
         android:layout_margin="@dimen/fab_margin"
         android:visibility="visible"
         app:srcCompat="@mipmap/ic_search" />
+</RelativeLayout>
 
-</android.support.design.widget.CoordinatorLayout>

@@ -8,10 +8,9 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="?android:attr/actionBarSize"
         android:background="@color/colorPrimary"
         app:popupTheme="@style/ToolbarPopupTheme"
-        app:theme="@style/ThemeToolbar"
         app:titleTextColor="@color/white" />
 
     <TextView
@@ -57,8 +56,8 @@
         android:gravity="top|left"
         android:padding="10dp"
         android:scrollbars="vertical"
-        android:textSize="12sp"
         android:text=""
+        android:textSize="12sp"
         android:visibility="visible" />
 
     <ProgressBar
@@ -89,11 +88,11 @@
             android:visibility="gone" />
 
         <Button
-            android:id="@+id/btn_play"
+            android:id="@+id/btn_open"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:text="播放"
+            android:text="打开所在文件夹"
             android:visibility="gone" />
     </LinearLayout>
 </RelativeLayout>

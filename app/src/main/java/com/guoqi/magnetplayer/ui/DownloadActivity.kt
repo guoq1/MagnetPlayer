@@ -11,6 +11,7 @@ import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
+import android.view.Gravity
 import android.view.MenuItem
 import android.view.View
 import com.frostwire.jlibtorrent.TorrentHandle
@@ -24,6 +25,8 @@ import com.guoqi.magnetplayer.core.contracts.TorrentSessionListener
 import com.guoqi.magnetplayer.core.models.TorrentSessionStatus
 import com.guoqi.magnetplayer.ui.MainActivity.Companion.rootPath
 import com.guoqi.magnetplayer.util.MagnetUtils
+import com.leon.lfilepickerlibrary.LFilePicker
+import com.leon.lfilepickerlibrary.utils.Constant
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -46,10 +49,17 @@ class DownloadActivity : AppCompatActivity() {
     private var startDownloadTask: DownloadTask? = null
     private var torrentPieceAdapter: TorrentPieceAdapter = TorrentPieceAdapter()
 
+    //下载是否完成
+    private var isFinish = false
+    //是否正在下载
+    private var isDownloading = false
+
     companion object {
         val TAG_URI = "uri"
-        var isDownloading = false
         var hasTitle = false
+        var REQUESTCODE_FROM_ACTIVITY = 1000
+        val MOV_FORMAT = arrayOf(".3gpp", ".png", ".avi", ".asf", ".asx", ".fvi", ".flv", ".lsf", ".lsx", ".m4u", ".mng", ".movie", ".pvx", ".m4v", ".mov", ".mp4", ".mpe", ".mpeg", ".mpg", ".mpg4", ".qt", ".rv", ".wm", ".wmv", ".wmx", ".wv", ".wvx", ".vdo", ".viv", ".vivo")
+        val IMG_FORMAT = arrayOf(".bmp",".gif",".jpeg",".jpg",".png", ".svf",".svg",".tif",".tiff",".wbmp")
     }
 
     private var uri: Uri? = null
@@ -84,14 +94,33 @@ class DownloadActivity : AppCompatActivity() {
             }
         }
 
-        btn_play.setOnClickListener {
-            val intent = Intent(this@DownloadActivity, PlayerActivity::class.java)
-            val path = "$rootPath/${tv_title.text}"
-            Log.e(TAG, "path = $path")
-            intent.putExtra("url", Uri.parse(path))
-            intent.putExtra("title", tv_title.text.toString())
-            startActivity(intent)
+        btn_open.setOnClickListener {
+            LFilePicker()
+                    .withActivity(this)
+                    .withRequestCode(REQUESTCODE_FROM_ACTIVITY)
+                    .withStartPath(rootPath)
+                    .withIsGreater(true)//过滤文件大小 小于指定大小的文件
+                    .withFileSize(500 * 1024)//指定文件大小为500K
+                    .withTitle("下载目录")
+                    .withTitleColor("#FFFFFF")
+                    .withBackIcon(Constant.BACKICON_STYLETHREE)
+                    .withBackgroundColor("#333333")
+                    .withFileFilter(MOV_FORMAT + IMG_FORMAT)
+                    .withMutilyMode(false)
+                    .start()
         }
+    }
+
+    /**
+     * 开始播放
+     */
+    private fun startPlay(path: String) {
+        val intent = Intent(this@DownloadActivity, PlayerActivity::class.java)
+        //val path = "$rootPath/${tv_title.text}"
+        Log.e(TAG, "播放的path = $path")
+        intent.putExtra("url", Uri.parse(path))
+        intent.putExtra("title", tv_title.text.toString())
+        startActivity(intent)
     }
 
     private fun setContinueClick(retry: String?) {
@@ -148,8 +177,8 @@ class DownloadActivity : AppCompatActivity() {
                 if (tv_log.visibility == View.VISIBLE) {
                     runOnUiThread {
                         tv_log.text = """$log\n${tv_log.text}"""
-                        if (tv_log.text.length > 4096) {
-                            tv_log.text = "> 自动清除日志 "
+                        if (tv_log.text.length > 2048) {
+                            tv_log.text = "\n> 自动清除日志 "
                         }
                     }
                 }
@@ -187,8 +216,11 @@ class DownloadActivity : AppCompatActivity() {
                     var title = torrentSessionStatus.magnetUri.toString()
                     if (title.contains("&dn=")) {
                         tv_title.text = title.substring(title.indexOf("&dn=") + 4)
+                        tv_title.gravity = Gravity.LEFT
                         hasTitle = true
-                        btn_play.visibility = View.VISIBLE
+                        btn_open.visibility = View.VISIBLE
+                        tv_log.visibility = View.GONE
+                        rv_download.visibility = View.VISIBLE
                     }
                     pd.longSnackbar("下载到: /DownLoad 目录下")
                 }
@@ -262,18 +294,16 @@ class DownloadActivity : AppCompatActivity() {
         when (torrentSessionStatus.state) {
             TorrentStatus.State.DOWNLOADING -> {
                 //正在下载,返回下载量
-                if (tv_log.visibility == View.VISIBLE) {
-                    rv_download.visibility = View.VISIBLE
-                    tv_log.visibility = View.GONE
-                }
-
                 refreshData(torrentSessionStatus)
                 tv_progress.text = "下载中 " + BigDecimal((torrentSessionStatus.progress).toDouble() * 100).setScale(2, RoundingMode.HALF_UP).toString() + "%"
+                isDownloading = true
             }
             TorrentStatus.State.SEEDING -> {
                 //下载完成
                 refreshData(torrentSessionStatus)
                 tv_progress.text = "下载已完成"
+                isDownloading = false
+                isFinish = true
             }
         }
 
@@ -303,19 +333,20 @@ class DownloadActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-
         torrentSession?.listener = null
         torrentSession?.stop()
     }
 
     override fun onPause() {
         super.onPause()
-        torrentSession?.pause()
+        if (!isFinish)
+            torrentSession?.pause()
     }
 
     override fun onResume() {
         super.onResume()
-        torrentSession?.resume()
+        if (!isFinish)
+            torrentSession?.resume()
     }
 
     override fun onBackPressed() {
@@ -348,6 +379,17 @@ class DownloadActivity : AppCompatActivity() {
                         setContinueClick("重试")
                     }
                 }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK && data != null) {
+            if (requestCode == REQUESTCODE_FROM_ACTIVITY) {
+                var list = data.getStringArrayListExtra(Constant.RESULT_INFO) as ArrayList<String>
+                Log.e(TAG, "选择的文件 = " + list.toString())
+                startPlay(list[0])
+            }
+        }
     }
 
 }
