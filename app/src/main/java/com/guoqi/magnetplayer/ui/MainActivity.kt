@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
@@ -20,7 +19,6 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.InputMethodManager.HIDE_NOT_ALWAYS
@@ -74,7 +72,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        //setStatuesBar()不需要设置
         setContentView(R.layout.activity_main)
         toolbar.setTitle(R.string.app_name)
         setSupportActionBar(toolbar)
@@ -89,7 +86,6 @@ class MainActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1);
         }
-
     }
 
 
@@ -97,7 +93,7 @@ class MainActivity : AppCompatActivity() {
         tv_source.text = Html.fromHtml(String.format(SOURCE_TEMPLATE, source))
         et_key.setOnEditorActionListener { _, i, _ ->
             if (et_key.text.toString().isEmpty()) {
-                toolbar.snackbar("请先输入关键词")
+                toolbar.snackbar(getString(R.string.please_input_search_key))
                 true
             }
             if (i == EditorInfo.IME_ACTION_SEARCH) {
@@ -107,7 +103,7 @@ class MainActivity : AppCompatActivity() {
         }
         btn_search.setOnClickListener {
             if (et_key.text.toString().isEmpty()) {
-                toolbar.snackbar("请先输入关键词")
+                toolbar.snackbar(getString(R.string.please_input_search_key))
                 return@setOnClickListener
             }
             goSearch()
@@ -151,10 +147,10 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_settings -> {
-                selector("更换搜索源", sourceArr.toList()) { _, i ->
+                selector(getString(R.string.change_search_pot), sourceArr.toList()) { _, i ->
                     source = sourceArr[i]
                     tv_source.text = Html.fromHtml(String.format(SOURCE_TEMPLATE, source))
-                    toolbar.snackbar("切换到搜索源：$source")
+                    toolbar.snackbar(getString(R.string.shift_search_pot) + source)
                 }
                 true
             }
@@ -165,7 +161,7 @@ class MainActivity : AppCompatActivity() {
                         .withStartPath(rootPath)
                         .withIsGreater(true)//过滤文件大小 小于指定大小的文件
                         .withFileSize(500 * 1024)//指定文件大小为500K
-                        .withTitle("下载目录")
+                        .withTitle(getString(R.string.title_download_folder))
                         .withTitleColor("#FFFFFF")
                         .withBackIcon(Constant.BACKICON_STYLETHREE)
                         .withBackgroundColor("#333333")
@@ -180,7 +176,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun initProgressDialog() {
         pd = ProgressDialog(this)
-        pd.setMessage("加载中，请稍后")
+        pd.setMessage(getString(R.string.tip_loading))
         pd.setProgressStyle(ProgressDialog.STYLE_SPINNER)
         pd.setCanceledOnTouchOutside(false)
         pd.setCancelable(true)
@@ -250,7 +246,7 @@ class MainActivity : AppCompatActivity() {
             inputView.et.let { it.setSelection(it.text.toString().length) }
 
             var addLinkDialog = AlertDialog.Builder(this)
-                    .setTitle("添加磁链")
+                    .setTitle(getString(R.string.add_magnet_link))
                     .setView(inputView)
                     .setPositiveButton(R.string.ok) { _, _ ->
                         val link = inputView.et.text.toString()
@@ -259,7 +255,7 @@ class MainActivity : AppCompatActivity() {
                             link.startsWith(MagnetUtils.MAGNET_PREFIX) -> url = link
                             MagnetUtils.isHash(link) -> url = MagnetUtils.normalizeMagnetHash(link)
                             else -> {
-                                inputView.longSnackbar("磁链不正确, 请检查")
+                                inputView.longSnackbar(getString(R.string.magnet_is_wrong))
                             }
                         }
 
@@ -294,26 +290,6 @@ class MainActivity : AppCompatActivity() {
                 }.show()
     }
 
-
-    private fun setStatuesBar() {
-        window.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            //6.0透明处理
-            window.statusBarColor = ContextCompat.getColor(this, R.color.trans) //改为透明栏
-        } else
-        //增加7.0通过反射处理status透明
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                try {
-                    val decorViewClazz = Class.forName("com.android.internal.policy.DecorView")
-                    val field = decorViewClazz.getDeclaredField("mSemiTransparentStatusBarColor")
-                    field.isAccessible = true
-                    field.setInt(window.decorView, ContextCompat.getColor(this, R.color.trans))  //改为透明栏
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-
-            }
-    }
 
     fun hideKeyBoard() {
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
