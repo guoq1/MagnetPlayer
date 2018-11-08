@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="lfile_colorPrimary">#333333</color>
+    <color name="lfile_colorPrimaryDark">#333333</color>
+    <color name="lfile_colorAccent">#92B4F4</color>
+    <color name="lfile_gray">#aaaaaa</color>
+    <color name="lfile_lightgray">#dddddd</color>
+    <color name="lfile_white">#fff</color>
+    <color name="lfile_defaultColor">#333333</color>
+</resources>
