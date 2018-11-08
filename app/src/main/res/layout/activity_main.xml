@@ -33,6 +33,8 @@
             android:layout_weight="1"
             android:background="@drawable/bg_search_input"
             android:hint="请输入关键字"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
             android:maxLines="1"
             android:padding="8dp"
             android:text=""

@@ -42,23 +42,23 @@ class RecordAdapter(private var mContext: Context, private var datas: ArrayList<
         }
 
 
-        viewHolder.tv_date?.text = bean.count
-        viewHolder.tv_size?.text = bean.formatSize
+        viewHolder.tv_date.text = bean.count
+        viewHolder.tv_size.text = bean.formatSize
         if (bean.resolution.isNotEmpty()) {
-            viewHolder.tv_resolution?.text = bean.resolution
-            viewHolder.tv_resolution?.setBackgroundResource(com.guoqi.magnetplayer.R.drawable.bg_tag_gray_trans)
+            viewHolder.tv_resolution.text = bean.resolution
+            viewHolder.tv_resolution.setBackgroundResource(com.guoqi.magnetplayer.R.drawable.bg_tag_gray_trans)
         } else {
-            viewHolder.tv_resolution?.text = ""
-            viewHolder.tv_resolution?.setBackgroundResource(0)
+            viewHolder.tv_resolution.text = ""
+            viewHolder.tv_resolution.setBackgroundResource(0)
         }
 
-        viewHolder.ll_item?.setOnClickListener {
+        viewHolder.ll_item.setOnClickListener {
             var cm = mContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            cm?.let {
-                cm.primaryClip = ClipData.newPlainText(null, bean?.magnet)
+            cm.let {
+                cm.primaryClip = ClipData.newPlainText(null, bean.magnet)
                 mContext.toast("磁链已复制")
             }
-            listener?.onClick(it)
+            listener.onClick(it)
         }
     }
 

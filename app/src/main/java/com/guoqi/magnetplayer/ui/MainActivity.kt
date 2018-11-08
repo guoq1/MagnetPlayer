@@ -21,6 +21,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.WindowManager
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.InputMethodManager.HIDE_NOT_ALWAYS
 import com.alibaba.fastjson.JSON
@@ -62,13 +63,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var pd: ProgressDialog
-    private var page = 1
+
     private var sourceArr = arrayOf("种子搜", "磁力吧", "BT兔子", "idope", "BTDB", "BT4G", "屌丝搜", "AOYOSO")
     private var source = sourceArr[0]
     private var SOURCE_TEMPLATE = """当前搜索源为：<font color=#FFFFFF>"%s"</font> ，搜索结果来自DHT网络。"""
+
+    private var page = 1
     private var recordList = ArrayList<RecordBean.Results>()
     private lateinit var recordAdapter: RecordAdapter
-    private lateinit var noView: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,9 +82,6 @@ class MainActivity : AppCompatActivity() {
         initProgressDialog()
         initData()
 
-        fab.setOnClickListener { _ ->
-            showAddLinkDialog()
-        }
     }
 
     override fun onResume() {
@@ -96,13 +95,25 @@ class MainActivity : AppCompatActivity() {
 
     private fun initData() {
         tv_source.text = Html.fromHtml(String.format(SOURCE_TEMPLATE, source))
+        et_key.setOnEditorActionListener { _, i, _ ->
+            if (et_key.text.toString().isEmpty()) {
+                toolbar.snackbar("请先输入关键词")
+                true
+            }
+            if (i == EditorInfo.IME_ACTION_SEARCH) {
+                goSearch()
+            }
+            true
+        }
         btn_search.setOnClickListener {
             if (et_key.text.toString().isEmpty()) {
                 toolbar.snackbar("请先输入关键词")
                 return@setOnClickListener
             }
-            loadDialog()
-            getSearchList(LOAD_REFRESH)
+            goSearch()
+        }
+        fab.setOnClickListener { _ ->
+            showAddLinkDialog()
         }
 
         recordAdapter = RecordAdapter(this, recordList)
@@ -125,6 +136,11 @@ class MainActivity : AppCompatActivity() {
             showAddLinkDialog()
         })
 
+    }
+
+    private fun goSearch() {
+        loadDialog()
+        getSearchList(LOAD_REFRESH)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

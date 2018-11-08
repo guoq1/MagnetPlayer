@@ -59,7 +59,7 @@ class DownloadActivity : AppCompatActivity() {
         var hasTitle = false
         var REQUESTCODE_FROM_ACTIVITY = 1000
         val MOV_FORMAT = arrayOf(".3gpp", ".png", ".avi", ".asf", ".asx", ".fvi", ".flv", ".lsf", ".lsx", ".m4u", ".mng", ".movie", ".pvx", ".m4v", ".mov", ".mp4", ".mpe", ".mpeg", ".mpg", ".mpg4", ".qt", ".rv", ".wm", ".wmv", ".wmx", ".wv", ".wvx", ".vdo", ".viv", ".vivo")
-        val IMG_FORMAT = arrayOf(".bmp",".gif",".jpeg",".jpg",".png", ".svf",".svg",".tif",".tiff",".wbmp")
+        val IMG_FORMAT = arrayOf(".bmp", ".gif", ".jpeg", ".jpg", ".png", ".svf", ".svg", ".tif", ".tiff", ".wbmp")
     }
 
     private var uri: Uri? = null
@@ -83,8 +83,6 @@ class DownloadActivity : AppCompatActivity() {
         } else {
             pd.snackbar("Uri不正确")
         }
-
-
 
         btn_option.setOnClickListener {
             if (btn_option.text == "重试") {
@@ -116,7 +114,6 @@ class DownloadActivity : AppCompatActivity() {
      */
     private fun startPlay(path: String) {
         val intent = Intent(this@DownloadActivity, PlayerActivity::class.java)
-        //val path = "$rootPath/${tv_title.text}"
         Log.e(TAG, "播放的path = $path")
         intent.putExtra("url", Uri.parse(path))
         intent.putExtra("title", tv_title.text.toString())
@@ -127,8 +124,7 @@ class DownloadActivity : AppCompatActivity() {
         if (torrentSession!!.isPaused) {
             torrentSession?.resume()
             btn_option?.text = "暂停"
-            retry?.let { pd.visibility = View.VISIBLE;countDown(300) }
-            btn_option.visibility = View.GONE
+            retry?.let { countDown(300) }
         } else {
             torrentSession?.pause()
             btn_option.visibility = View.VISIBLE
@@ -177,7 +173,7 @@ class DownloadActivity : AppCompatActivity() {
                 if (tv_log.visibility == View.VISIBLE) {
                     runOnUiThread {
                         tv_log.text = """$log\n${tv_log.text}"""
-                        if (tv_log.text.length > 2048) {
+                        if (tv_log.text.length > 1280) {
                             tv_log.text = "\n> 自动清除日志 "
                         }
                     }
@@ -198,7 +194,10 @@ class DownloadActivity : AppCompatActivity() {
                 isDownloading = true
                 showLog(torrentSessionStatus)
                 countDown(300)
-                runOnUiThread { pd.visibility = View.GONE }
+                runOnUiThread {
+                    pd.visibility = View.GONE
+                    btn_option.visibility = View.VISIBLE
+                }
             }
 
             override fun onTorrentResumed(torrentHandle: TorrentHandle, torrentSessionStatus: TorrentSessionStatus) {
@@ -337,15 +336,9 @@ class DownloadActivity : AppCompatActivity() {
         torrentSession?.stop()
     }
 
-    override fun onPause() {
-        super.onPause()
-        if (!isFinish)
-            torrentSession?.pause()
-    }
-
     override fun onResume() {
         super.onResume()
-        if (!isFinish)
+        if (!isFinish && torrentSession!!.isPaused)
             torrentSession?.resume()
     }
 
