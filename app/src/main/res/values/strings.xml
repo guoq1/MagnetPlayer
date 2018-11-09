@@ -509,4 +509,17 @@
     <string name="tip_loading">加载中，请稍后</string>
     <string name="add_magnet_link">添加磁链</string>
     <string name="magnet_is_wrong">磁链不正确, 请检查</string>
+    <string name="title_magnet_download">磁力下载</string>
+    <string name="tip_waiting_for_p2p">等待时间根据当前P2P网络情况而定...</string>
+    <string name="uri_is_wrong">URI不正确</string>
+    <string name="tip_retry">重试</string>
+    <string name="tip_pause">暂停</string>
+    <string name="tip_continue">继续</string>
+    <string name="tip_download_fail">下载失败</string>
+    <string name="tip_fetch_time_out">获取元数据超时, 可尝试复制磁链到迅雷...</string>
+    <string name="tip_tip">提示</string>
+    <string name="tip_confirm_downloading">正在下载中，是否要取消下载？</string>
+    <string name="tip_fetching_data">正在获取元数据...</string>
+    <string name="tip_fetching_data_pause">正在获取元数据...[已暂停]</string>
+    <string name="tip_time_out">超时</string>
 </resources>

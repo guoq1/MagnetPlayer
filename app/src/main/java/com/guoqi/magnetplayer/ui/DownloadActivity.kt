@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
+import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -27,9 +28,6 @@ import com.guoqi.magnetplayer.ui.MainActivity.Companion.rootPath
 import com.guoqi.magnetplayer.util.MagnetUtils
 import com.leon.lfilepickerlibrary.LFilePicker
 import com.leon.lfilepickerlibrary.utils.Constant
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_download.*
 import org.jetbrains.anko.alert
 import org.jetbrains.anko.design.longSnackbar
@@ -40,11 +38,19 @@ import java.io.File
 import java.lang.ref.WeakReference
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.concurrent.TimeUnit
 
 class DownloadActivity : AppCompatActivity() {
 
-    private val TAG = DownloadActivity::class.java.simpleName
+    companion object {
+        val TAG = DownloadActivity::class.java.simpleName
+        val TAG_URI = "uri"
+        var hasTitle = false
+        var REQUESTCODE_FROM_ACTIVITY = 1000
+        val MOV_FORMAT = arrayOf(".3gpp", ".png", ".avi", ".asf", ".asx", ".fvi", ".flv", ".lsf", ".lsx", ".m4u", ".mng", ".movie", ".pvx", ".m4v", ".mov", ".mp4", ".mpe", ".mpeg", ".mpg", ".mpg4", ".qt", ".rv", ".wm", ".wmv", ".wmx", ".wv", ".wvx", ".vdo", ".viv", ".vivo")
+        val IMG_FORMAT = arrayOf(".bmp", ".gif", ".jpeg", ".jpg", ".png", ".svf", ".svg", ".tif", ".tiff", ".wbmp")
+        var countTime = 300 //超时时间
+    }
+
     private var torrentSession: TorrentSession? = null
     private var startDownloadTask: DownloadTask? = null
     private var torrentPieceAdapter: TorrentPieceAdapter = TorrentPieceAdapter()
@@ -53,21 +59,13 @@ class DownloadActivity : AppCompatActivity() {
     private var isFinish = false
     //是否正在下载
     private var isDownloading = false
-
-    companion object {
-        val TAG_URI = "uri"
-        var hasTitle = false
-        var REQUESTCODE_FROM_ACTIVITY = 1000
-        val MOV_FORMAT = arrayOf(".3gpp", ".png", ".avi", ".asf", ".asx", ".fvi", ".flv", ".lsf", ".lsx", ".m4u", ".mng", ".movie", ".pvx", ".m4v", ".mov", ".mp4", ".mpe", ".mpeg", ".mpg", ".mpg4", ".qt", ".rv", ".wm", ".wmv", ".wmx", ".wv", ".wvx", ".vdo", ".viv", ".vivo")
-        val IMG_FORMAT = arrayOf(".bmp", ".gif", ".jpeg", ".jpg", ".png", ".svf", ".svg", ".tif", ".tiff", ".wbmp")
-    }
-
+    //下载uri
     private var uri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_download)
-        toolbar.title = "磁力下载"
+        toolbar.title = getString(R.string.title_magnet_download)
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeButtonEnabled(true)
@@ -78,17 +76,17 @@ class DownloadActivity : AppCompatActivity() {
         }
 
         if (uri?.scheme == MagnetUtils.MAGNET_PREFIX) {
-            pd.longSnackbar("等待时间根据当前P2P网络情况而定...")
+            pd.longSnackbar(getString(R.string.tip_waiting_for_p2p))
             startDecodeTask()
         } else {
-            pd.snackbar("Uri不正确")
+            pd.snackbar(getString(R.string.uri_is_wrong))
         }
 
         btn_option.setOnClickListener {
-            if (btn_option.text == "重试") {
-                setContinueClick("重试")
+            if (btn_option.text == getString(R.string.tip_retry)) {
+                setOptionClick(getString(R.string.tip_retry))
             } else {
-                setContinueClick(null)
+                setOptionClick(null)
             }
         }
 
@@ -99,7 +97,7 @@ class DownloadActivity : AppCompatActivity() {
                     .withStartPath(rootPath)
                     .withIsGreater(true)//过滤文件大小 小于指定大小的文件
                     .withFileSize(500 * 1024)//指定文件大小为500K
-                    .withTitle("下载目录")
+                    .withTitle(getString(R.string.title_download_folder))
                     .withTitleColor("#FFFFFF")
                     .withBackIcon(Constant.BACKICON_STYLETHREE)
                     .withBackgroundColor("#333333")
@@ -120,17 +118,40 @@ class DownloadActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun setContinueClick(retry: String?) {
+    /**
+     * 暂停/继续
+     */
+    private fun setOptionClick(type: String?) {
         if (torrentSession!!.isPaused) {
+            //继续
             torrentSession?.resume()
-            btn_option?.text = "暂停"
-            retry?.let { countDown(300) }
+            btn_option?.text = getString(R.string.tip_pause)
+
+            //改变标题提示
+            if (!hasTitle) {
+                resumeTimer()
+                tv_title.text = getString(R.string.tip_fetching_data)
+                type?.let { stopTimer();startTimer(300) }
+            } else {
+                tv_title.text = tv_title.text.toString().replace("""[${getString(R.string.tip_pause)}]""", "")
+            }
         } else {
+            //暂停
             torrentSession?.pause()
             btn_option.visibility = View.VISIBLE
-            btn_option?.text = retry ?: "继续"
-            retry?.let { tv_progress.text = "下载失败" }
-            tv_title.text = "获取元数据超时, 可尝试复制磁链到迅雷..."
+            btn_option?.text = type ?: getString(R.string.tip_continue)
+
+            //改变标题提示
+            if (!hasTitle) {
+                pauseTimer()
+                tv_title.text = getString(R.string.tip_fetching_data_pause)
+                type?.let {
+                    tv_progress.text = getString(R.string.tip_download_fail)
+                    tv_title.text = getString(R.string.tip_fetch_time_out)
+                }
+            } else {
+                tv_title.text = tv_title.text.toString() + """[${getString(R.string.tip_pause)}]"""
+            }
             pd.visibility = View.GONE
         }
     }
@@ -182,7 +203,7 @@ class DownloadActivity : AppCompatActivity() {
 
             override fun onAlertException(err: String) {
                 Log.e(TAG, "onAlertException:$err")
-                if (err == NO_ROUTER_FOUND) {
+                if (err == NO_ROUTER_FOUND && isDownloading) {
                     torrentSession?.pause()
                     torrentSession?.resume()
                 }
@@ -193,7 +214,7 @@ class DownloadActivity : AppCompatActivity() {
                 Log.e(TAG, "onAddTorrent" + torrentSessionStatus.toString())
                 isDownloading = true
                 showLog(torrentSessionStatus)
-                countDown(300)
+                startTimer(300)
                 runOnUiThread {
                     pd.visibility = View.GONE
                     btn_option.visibility = View.VISIBLE
@@ -332,21 +353,22 @@ class DownloadActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        stopTimer()
         torrentSession?.listener = null
         torrentSession?.stop()
     }
 
     override fun onResume() {
         super.onResume()
-        if (!isFinish && torrentSession!!.isPaused)
+        if (!isFinish && isDownloading && torrentSession!!.isPaused)
             torrentSession?.resume()
     }
 
     override fun onBackPressed() {
         if (isDownloading) {
             alert {
-                title = "提示"
-                message = "正在下载中，是否要取消下载？"
+                title = getString(R.string.tip_tip)
+                message = getString(R.string.tip_confirm_downloading)
                 yesButton { super.onBackPressed() }
                 noButton { }
             }.show()
@@ -355,23 +377,52 @@ class DownloadActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * 定时器暂停/继续/重试
+     */
+    private var pause = false
+    private val mHandler = @SuppressLint("HandlerLeak")
+    object : Handler() {
+        override fun handleMessage(msg: android.os.Message) {
+            if (!pause) {
+                updateCurrentTime()
+            }
+        }
+    }
 
-    @SuppressLint("CheckResult")
-    fun countDown(countTime: Int) {
-        Observable.interval(0, 1, TimeUnit.SECONDS)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .map { increaseTime -> countTime - increaseTime.toInt() }
-                .take((countTime + 1).toLong())
-                .subscribe {
-                    if (!hasTitle) {
-                        tv_title.text = "正在获取元数据..."
-                        tv_progress.text = "${it}秒"
-                    }
-                    if (it == 0 && !hasTitle) {
-                        setContinueClick("重试")
-                    }
-                }
+    private fun updateCurrentTime() {
+        if (countTime-- > 0) {
+            if (!hasTitle) {
+                mHandler.sendEmptyMessageDelayed(0, 1000)
+                tv_title.text = getString(R.string.tip_fetching_data)
+                tv_progress.text = "${countTime}秒"
+            }
+        } else {
+            if (!hasTitle) {
+                setOptionClick(getString(R.string.tip_retry))
+            }
+        }
+    }
+
+    fun startTimer(seconds: Int) {
+        pause = false
+        countTime = seconds
+        mHandler.sendEmptyMessage(0)
+    }
+
+    private fun pauseTimer() {
+        pause = true
+        mHandler.removeMessages(0)
+    }
+
+    private fun resumeTimer() {
+        pause = false
+        mHandler.sendEmptyMessage(0)
+    }
+
+    private fun stopTimer() {
+        pause = true
+        mHandler.removeMessages(0)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -384,5 +435,6 @@ class DownloadActivity : AppCompatActivity() {
             }
         }
     }
+
 
 }
