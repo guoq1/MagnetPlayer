@@ -44,6 +44,7 @@ import org.jetbrains.anko.design.longSnackbar
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.selector
 import org.jetbrains.anko.startActivity
+import org.jetbrains.anko.toast
 import java.io.File
 import java.util.*
 import java.util.regex.Pattern
@@ -294,5 +295,38 @@ class MainActivity : AppCompatActivity() {
     fun hideKeyBoard() {
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(window.decorView.windowToken, HIDE_NOT_ALWAYS)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK) {
+            if (requestCode == REQUESTCODE_FROM_ACTIVITY) {
+                var list = data?.getStringArrayListExtra(Constant.RESULT_INFO) as ArrayList<String>
+                Log.e(TAG, "选择的文件 = " + list.toString())
+                //获取文件后缀名
+                var fileName = File(list[0].trim()).name
+                var suffix = fileName.substring(fileName.lastIndexOf("."))
+                when {
+                    IMG_FORMAT.asList().any { it == suffix } -> {
+                        var intent = Intent(this@MainActivity, PhotoActivity::class.java)
+                        intent.putExtra("url", """file://${list[0].trim()}""")
+                        startActivity(intent)
+                    }
+                    MOV_FORMAT.asList().any { it == suffix } -> startPlay(list[0])
+                    else -> toast("不支持此文件格式")
+                }
+
+            }
+        }
+    }
+
+    /**
+     * 开始播放
+     */
+    private fun startPlay(path: String) {
+        val intent = Intent(this@MainActivity, PlayerActivity::class.java)
+        intent.putExtra("url", """file://$path""")
+        intent.putExtra("title", File(path.trim()).name)
+        startActivity(intent)
     }
 }

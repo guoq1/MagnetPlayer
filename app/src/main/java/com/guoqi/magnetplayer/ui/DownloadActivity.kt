@@ -33,11 +33,13 @@ import org.jetbrains.anko.alert
 import org.jetbrains.anko.design.longSnackbar
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.noButton
+import org.jetbrains.anko.toast
 import org.jetbrains.anko.yesButton
 import java.io.File
 import java.lang.ref.WeakReference
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.util.*
 
 class DownloadActivity : AppCompatActivity() {
 
@@ -107,16 +109,6 @@ class DownloadActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * 开始播放
-     */
-    private fun startPlay(path: String) {
-        val intent = Intent(this@DownloadActivity, PlayerActivity::class.java)
-        Log.e(TAG, "播放的path = $path")
-        intent.putExtra("url", Uri.parse(path))
-        intent.putExtra("title", tv_title.text.toString())
-        startActivity(intent)
-    }
 
     /**
      * 暂停/继续
@@ -427,14 +419,34 @@ class DownloadActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == RESULT_OK && data != null) {
+        if (resultCode == RESULT_OK) {
             if (requestCode == REQUESTCODE_FROM_ACTIVITY) {
-                var list = data.getStringArrayListExtra(Constant.RESULT_INFO) as ArrayList<String>
+                var list = data?.getStringArrayListExtra(Constant.RESULT_INFO) as ArrayList<String>
                 Log.e(TAG, "选择的文件 = " + list.toString())
-                startPlay(list[0])
+                //获取文件后缀名
+                var fileName = File(list[0].trim()).name
+                var suffix = fileName.substring(fileName.lastIndexOf("."))
+                when {
+                    IMG_FORMAT.asList().any { it == suffix } -> {
+                        var intent = Intent(this@DownloadActivity, PhotoActivity::class.java)
+                        intent.putExtra("url", """file://${list[0].trim()}""")
+                        startActivity(intent)
+                    }
+                    MOV_FORMAT.asList().any { it == suffix } -> startPlay(list[0])
+                    else -> toast("不支持此文件格式")
+                }
             }
         }
     }
 
+    /**
+     * 开始播放
+     */
+    private fun startPlay(path: String) {
+        val intent = Intent(this@DownloadActivity, PlayerActivity::class.java)
+        intent.putExtra("url", """file://$path""")
+        intent.putExtra("title", File(path.trim()).name)
+        startActivity(intent)
+    }
 
 }

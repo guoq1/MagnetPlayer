@@ -65,6 +65,7 @@
             android:name=".ui.PlayerActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:screenOrientation="landscape" />
+        <activity android:name=".ui.PhotoActivity" />
 
 
         <provider

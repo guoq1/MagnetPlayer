@@ -86,6 +86,8 @@ dependencies {
     implementation 'com.github.dueeeke.dkplayer:dkplayer-armv7a:2.5.3'
     implementation 'com.github.dueeeke.dkplayer:dkplayer-ui:2.5.3'
     implementation project(path: ':lfilepickerlibrary')
-    //文件选择
-    //implementation 'com.leon:lfilepickerlibrary:1.8.0'
+    //文件管理
+    implementation project(path: ':lfilepickerlibrary')
+    //查看图片
+    implementation 'com.github.chrisbanes:PhotoView:2.1.4'
 }
