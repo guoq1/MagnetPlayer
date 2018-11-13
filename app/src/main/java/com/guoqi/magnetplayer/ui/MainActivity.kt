@@ -171,6 +171,10 @@ class MainActivity : AppCompatActivity() {
                         .start()
                 true
             }
+            R.id.action_about -> {
+                startActivity<AboutActivity>()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -308,9 +312,7 @@ class MainActivity : AppCompatActivity() {
                 var suffix = fileName.substring(fileName.lastIndexOf("."))
                 when {
                     IMG_FORMAT.asList().any { it == suffix } -> {
-                        var intent = Intent(this@MainActivity, PhotoActivity::class.java)
-                        intent.putExtra("url", """file://${list[0].trim()}""")
-                        startActivity(intent)
+                        startActivity<PhotoActivity>("url" to """file://${list[0].trim()}""")
                     }
                     MOV_FORMAT.asList().any { it == suffix } -> startPlay(list[0])
                     else -> toast("不支持此文件格式")
@@ -324,9 +326,6 @@ class MainActivity : AppCompatActivity() {
      * 开始播放
      */
     private fun startPlay(path: String) {
-        val intent = Intent(this@MainActivity, PlayerActivity::class.java)
-        intent.putExtra("url", """file://$path""")
-        intent.putExtra("title", File(path.trim()).name)
-        startActivity(intent)
+        startActivity<PlayerActivity>("url" to """file://$path""", "title" to File(path.trim()).name)
     }
 }

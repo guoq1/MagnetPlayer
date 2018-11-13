@@ -66,6 +66,7 @@
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:screenOrientation="landscape" />
         <activity android:name=".ui.PhotoActivity" />
+        <activity android:name=".ui.AboutActivity" />
 
 
         <provider

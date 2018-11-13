@@ -29,12 +29,9 @@ import com.guoqi.magnetplayer.util.MagnetUtils
 import com.leon.lfilepickerlibrary.LFilePicker
 import com.leon.lfilepickerlibrary.utils.Constant
 import kotlinx.android.synthetic.main.activity_download.*
-import org.jetbrains.anko.alert
+import org.jetbrains.anko.*
 import org.jetbrains.anko.design.longSnackbar
 import org.jetbrains.anko.design.snackbar
-import org.jetbrains.anko.noButton
-import org.jetbrains.anko.toast
-import org.jetbrains.anko.yesButton
 import java.io.File
 import java.lang.ref.WeakReference
 import java.math.BigDecimal
@@ -428,9 +425,7 @@ class DownloadActivity : AppCompatActivity() {
                 var suffix = fileName.substring(fileName.lastIndexOf("."))
                 when {
                     IMG_FORMAT.asList().any { it == suffix } -> {
-                        var intent = Intent(this@DownloadActivity, PhotoActivity::class.java)
-                        intent.putExtra("url", """file://${list[0].trim()}""")
-                        startActivity(intent)
+                        startActivity<PhotoActivity>("url" to """file://${list[0].trim()}""")
                     }
                     MOV_FORMAT.asList().any { it == suffix } -> startPlay(list[0])
                     else -> toast("不支持此文件格式")
@@ -443,10 +438,7 @@ class DownloadActivity : AppCompatActivity() {
      * 开始播放
      */
     private fun startPlay(path: String) {
-        val intent = Intent(this@DownloadActivity, PlayerActivity::class.java)
-        intent.putExtra("url", """file://$path""")
-        intent.putExtra("title", File(path.trim()).name)
-        startActivity(intent)
+        startActivity<PlayerActivity>("url" to """file://$path""", "title" to File(path.trim()).name)
     }
 
 }
