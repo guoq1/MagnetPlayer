@@ -33,12 +33,21 @@
         android:textColor="@color/colorPrimary"
         android:textSize="20sp" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_appName"
+        android:layout_centerHorizontal="true"
+        android:padding="16dp"
+        android:text="提示：本软件不储存任何种子文件，只从网络抓取磁力链接。本软件不得用于商业用途，仅供学习交流。"
+        android:textSize="12sp" />
+
     <View
         android:id="@+id/v_line"
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
         android:layout_below="@+id/tv_appName"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="80dp"
         android:background="#CCCCCC" />
 
     <LinearLayout

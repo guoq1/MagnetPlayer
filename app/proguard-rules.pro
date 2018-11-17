@@ -222,6 +222,14 @@
 -dontwarn okio.**
 -keep class okio.**{*;}
 
+#okgo
+-dontwarn com.lzy.okgo.**
+-keep class com.lzy.okgo.**{*;}
+
+#okserver
+-dontwarn com.lzy.okserver.**
+-keep class com.lzy.okserver.**{*;}
+
 #dkplayer
 -keep class tv.danmaku.ijk.** { *; }
 -dontwarn tv.danmaku.ijk.**

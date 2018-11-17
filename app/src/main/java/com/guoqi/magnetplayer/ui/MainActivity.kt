@@ -1,13 +1,16 @@
 package com.guoqi.magnetplayer.ui
 
 import android.Manifest
+import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.PowerManager
 import android.provider.Settings
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
@@ -278,6 +281,7 @@ class MainActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         when (requestCode) {
             1 -> if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                ignoreBatteryOptimization(this@MainActivity)
             } else {
                 showNoPermissionDialog(this, "文件读写")
             }
@@ -293,6 +297,26 @@ class MainActivity : AppCompatActivity() {
                     intent.data = Uri.parse("package:" + context.packageName)
                     context.startActivity(intent)
                 }.show()
+    }
+
+    private fun ignoreBatteryOptimization(activity: Activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                var powerManager = getSystemService(POWER_SERVICE) as PowerManager
+                var hasIgnored = powerManager.isIgnoringBatteryOptimizations(activity.packageName);
+                /**
+                 * 判断当前APP是否有加入电池优化的白名单，
+                 * 如果没有，弹出加入电池优化的白名单的设置对话框
+                 * */
+                if (!hasIgnored) {
+                    var intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                    intent.data = Uri.parse("package:" + activity.packageName)
+                    startActivity(intent)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
 
