@@ -39,7 +39,7 @@
         android:layout_below="@+id/tv_appName"
         android:layout_centerHorizontal="true"
         android:padding="16dp"
-        android:text="提示：本软件不储存任何种子文件，只从网络抓取磁力链接。本软件不得用于商业用途，仅供学习交流。"
+        android:text="@string/tip_app_desc"
         android:textSize="12sp" />
 
     <View
