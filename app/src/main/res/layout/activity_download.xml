@@ -88,6 +88,14 @@
             android:visibility="gone" />
 
         <Button
+            android:id="@+id/btn_thunder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:text="使用迅雷打开磁链"
+            android:visibility="gone" />
+
+        <Button
             android:id="@+id/btn_open"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -91,6 +91,7 @@ dependencies {
     implementation project(path: ':lfilepickerlibrary')
     //查看图片
     implementation 'com.github.chrisbanes:PhotoView:2.1.4'
-
+    //搜索框带记录
+    implementation 'com.carson_ho:SearchLayout:1.0.1'
 
 }

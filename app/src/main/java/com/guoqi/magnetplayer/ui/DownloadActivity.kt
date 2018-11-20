@@ -60,6 +60,7 @@ class DownloadActivity : AppCompatActivity() {
     private var isDownloading = false
     //下载uri
     private var uri: Uri? = null
+    private var url: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,6 +72,7 @@ class DownloadActivity : AppCompatActivity() {
         initRecycleView()
 
         intent.getStringExtra(TAG_URI)?.let {
+            url = it
             uri = Uri.parse(it)
         }
 
@@ -87,6 +89,10 @@ class DownloadActivity : AppCompatActivity() {
             } else {
                 setOptionClick(null)
             }
+        }
+
+        btn_thunder.setOnClickListener {
+            wakeThunder(url!!)
         }
 
         btn_open.setOnClickListener {
@@ -207,6 +213,7 @@ class DownloadActivity : AppCompatActivity() {
                 runOnUiThread {
                     pd.visibility = View.GONE
                     btn_option.visibility = View.VISIBLE
+                    btn_thunder.visibility = View.VISIBLE
                 }
             }
 
@@ -313,6 +320,7 @@ class DownloadActivity : AppCompatActivity() {
                 tv_progress.text = "下载已完成"
                 isDownloading = false
                 isFinish = true
+                btn_thunder.visibility = View.GONE
             }
         }
 
@@ -439,6 +447,20 @@ class DownloadActivity : AppCompatActivity() {
      */
     private fun startPlay(path: String) {
         startActivity<PlayerActivity>("url" to """file://$path""", "title" to File(path.trim()).name)
+    }
+
+
+    /**
+     * 调起迅雷
+     */
+    private fun wakeThunder(link: String) {
+        try {
+            var intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            intent.addCategory("android.intent.category.DEFAULT")
+            startActivity(intent)
+        } catch (e: Exception) {
+            pd.snackbar("本机还没有安装迅雷...")
+        }
     }
 
 }
